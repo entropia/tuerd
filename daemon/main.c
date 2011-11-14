@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 		if(auth_success)
 			open_door_curl();
 
-		pcsc_close(interface);
+		pcsc_close(pcsc_ctx, intf);
 	}
 
 	return EXIT_SUCCESS;
