@@ -36,7 +36,8 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb) {
 
 	ret = mf_authenticate(intf, 0xD, k, NULL);
 	if(ret != MF_OK) {
-		if(ret == MF_ERR_CARD_AUTH_FAIL) {
+		if(ret == MF_ERR_AUTHENTICATION_ERROR ||
+		   ret == MF_ERR_CARD_AUTH_FAIL) {
 			fprintf(stderr, "Authentication failed for UID ");
 
 			for(int i=0; i<7; i++) {
