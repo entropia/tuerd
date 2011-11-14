@@ -61,9 +61,26 @@ int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
 	log("Result");
 	log("%s", result);
 
+	curl_easy_cleanup(curl);
+
 	return 1;
 }
 
 void open_door_curl() {
+	CURL *curl;
 
+	curl = curl_easy_init();
+	if(!curl) {
+		log("curl_easy_init() failed");
+		return;
+	}
+
+	curl_easy_setopt(curl, CURLOPT_URL, CURL_UNLOCK_URL);
+	curl_easy_setopt(curl, CURLOPT_USERPWD, CURL_UNLOCK_AUTH);
+	curl_easy_setopt(curl, CURLOPT_POST, 1L);
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0L);
+
+	curl_easy_perform(curl);
+
+	curl_easy_cleanup(curl);
 }
