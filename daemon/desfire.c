@@ -20,7 +20,7 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb) {
 		fprintf(stderr, "Policy did not permit UID ");
 
 		for(int i=0; i<7; i++) {
-			fprintf(stderr, "%2X", v.uid[i]);
+			fprintf(stderr, "%02X", v.uid[i]);
 		}
 		
 		fprintf(stderr, "\n");
@@ -40,7 +40,7 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb) {
 			fprintf(stderr, "Authentication failed for UID ");
 
 			for(int i=0; i<7; i++) {
-				log("%2X", v.uid[i]);
+				log("%02X", v.uid[i]);
 			}
 			
 			fprintf(stderr, "\n");
