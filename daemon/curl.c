@@ -35,12 +35,13 @@ static size_t append_string(const char *ptr, size_t size, size_t nmemb, void *us
 }
 
 int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
+	int ret = 0;
 	CURL *curl;
 
 	curl = curl_easy_init();
 	if(!curl) {
 		log("curl_easy_init() failed");
-		return -1;
+		return 0;
 	}
 
 	unsigned char *result = NULL;
@@ -58,12 +59,25 @@ int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
 
 	curl_easy_perform(curl);
 
-	log("Result");
-	log("%s", result);
+	if(*result == 'f') {
+		ret = 0;
+		goto out;
+	}
 
+	unsigned char *keystr = strchr(result, ' ');
+	if(!keystr || strlen(keystr) != 32) {
+		ret = 0;
+		goto out;
+	}
+
+	mf_key_parse(key_out, keystr);
+
+	ret = 1;
+out:
+	free(result);
 	curl_easy_cleanup(curl);
 
-	return 1;
+	return ret;
 }
 
 void open_door_curl() {

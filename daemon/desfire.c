@@ -16,7 +16,7 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb) {
 	}
 
 	mf_key_t k;
-	if(cb(v.uid, k)) {
+	if(!cb(v.uid, k)) {
 		fprintf(stderr, "Policy did not permit UID ");
 
 		for(int i=0; i<7; i++) {
