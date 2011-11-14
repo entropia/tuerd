@@ -4,7 +4,10 @@ OBJS=curl.o\
 	pcsc.o
 
 %.o: %.c
-	gcc -I../../libmf/include/ -pthread -I/usr/include/PCSC -std=gnu99 $< -c -o $@
+	gcc -g -I../../libmf/include/ -pthread -I/usr/include/PCSC -std=gnu99 $< -c -o $@
 
 all: $(OBJS)
-	gcc -lcurl -lpcsclite -L../../libmf/build/src/ -lmf -o tuerd $(OBJS)
+	gcc -g -lcurl -lpcsclite -L../../libmf/build/src/ -lmf -o tuerd $(OBJS)
+
+clean:
+	rm *.o tuerd
