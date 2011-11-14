@@ -1,1 +1,1 @@
-#define log(format, ...) fprintf(stderr, (format) "\n", ##__VA_ARGS__)
+#define log(format, ...) fprintf(stderr, format "\n", ##__VA_ARGS__)

@@ -12,18 +12,18 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb) {
 	ret = mf_get_version(intf, &v);
 	if(ret != MF_OK) {
 		log("mf_get_version: %s", mf_error_str(ret));
-		goto out;
+		return 0;
 	}
 
 	mf_key_t k;
-	if(cb(v->uid, k)) {
-		log("Policy did not permit UID ");
+	if(cb(v.uid, k)) {
+		fprintf(stderr, "Policy did not permit UID ");
 
 		for(int i=0; i<7; i++) {
-			log("%2X", v->uid[i]);
+			fprintf(stderr, "%2X", v.uid[i]);
 		}
 		
-		log("");
+		fprintf(stderr, "\n");
 
 		return 0;
 	}
@@ -34,19 +34,19 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb) {
 		return 0;
 	}
 
-	ret = mf_authenticate(intf, 0xD, door_key, NULL);
+	ret = mf_authenticate(intf, 0xD, k, NULL);
 	if(ret != MF_OK) {
 		if(ret == MF_ERR_CARD_AUTH_FAIL) {
-			log("Authentication failed for UID ");
+			fprintf(stderr, "Authentication failed for UID ");
 
 			for(int i=0; i<7; i++) {
-				log("%2X", v->uid[i]);
+				log("%2X", v.uid[i]);
 			}
 			
-			log("");
+			fprintf(stderr, "\n");
 		}
 		else
-			log("mf_authenticate: %s", mf_error_str(ret));
+			fprintf(stderr, "mf_authenticate: %s", mf_error_str(ret));
 
 		return 0;
 	}
