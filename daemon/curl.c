@@ -61,7 +61,7 @@ int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
 
 	curl_easy_perform(curl);
 
-	if(!result || *result == 'f') {
+	if(!result || *result != 't') {
 		ret = 0;
 		goto out;
 	}
