@@ -22,10 +22,12 @@ static size_t append_string(const char *ptr, size_t size, size_t nmemb, void *us
 		return 0;
 
 	size_t old_len;
-	if(*str)
-		old_len = strlen(*str);
-	else
-		old_len = 0;
+	if(!*str) {
+		*str = strndup(ptr, in_len);
+		return in_len;
+	}
+
+	old_len = strlen(*str);
 
 	*str = realloc(*str, old_len + in_len + 1);
 	if(!*str)
