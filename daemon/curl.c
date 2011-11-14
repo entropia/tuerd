@@ -21,7 +21,12 @@ static size_t append_string(const char *ptr, size_t size, size_t nmemb, void *us
 	if(in_len / size != nmemb)
 		return 0;
 
-	size_t old_len = strlen(*str);
+	size_t old_len;
+	if(*str)
+		old_len = strlen(*str);
+	else
+		old_len = 0;
+
 	*str = realloc(*str, old_len + in_len + 1);
 	if(!*str)
 		return 0;
@@ -38,15 +43,25 @@ int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
 		return -1;
 	}
 
-	unsigned char *result;
+	unsigned char *result = NULL;
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, append_string);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 	curl_easy_setopt(curl, CURLOPT_URL, CURL_GETKEY_URL);
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "foobar");
+	unsigned char argbuf[19];
+	strcpy(argbuf, "UID=");
+	for(int i=0; i < 7; i++) {
+		snprintf(argbuf + 4 + 2*i, 3, "%02X", uid[i]);
+	}
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, argbuf);
 
 	curl_easy_perform(curl);
+
+	log("Result");
+	log("%s", result);
+
+	return 1;
 }
 
 void open_door_curl() {
