@@ -1,0 +1,9 @@
+msc {
+	r [label="Reader"], k [label="Karte"];
+	r=>k [label="Authenticate(keyNo)"];
+	|||;
+	k=>r [label="enc(RndB)"];
+	r=>k [label="dec(RndA || RndB')"];
+	k=>r [label="enc(RndA')"];
+	
+}
