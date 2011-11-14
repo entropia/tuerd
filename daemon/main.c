@@ -31,6 +31,8 @@ int main(int argc, char **argv) {
 		auth_success = desfire_authenticate(intf, get_key_curl);
 		if(auth_success)
 			open_door_curl();
+
+		pcsc_close(interface);
 	}
 
 	return EXIT_SUCCESS;
