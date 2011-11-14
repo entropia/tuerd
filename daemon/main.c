@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 	log("tuerd starting up");
 
 	struct pcsc_context *pcsc_ctx = pcsc_init();
-	if(pcsc_ctx) {
+	if(!pcsc_ctx) {
 		log("pcsc_init() failed");
 		return EXIT_FAILURE;
 	}
