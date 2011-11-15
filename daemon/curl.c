@@ -51,6 +51,7 @@ int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, append_string);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 	curl_easy_setopt(curl, CURLOPT_URL, CURL_GETKEY_URL);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
 
@@ -101,6 +102,7 @@ void open_door_curl() {
 	unsigned char errbuf[CURL_ERROR_SIZE];
 	curl_easy_setopt(curl, CURLOPT_URL, CURL_UNLOCK_URL);
 	curl_easy_setopt(curl, CURLOPT_USERPWD, CURL_UNLOCK_AUTH);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0L);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
