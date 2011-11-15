@@ -9,7 +9,7 @@
 
 struct pcsc_context {
 	SCARDCONTEXT pcsc_ctx;
-	unsigned char *reader;
+	char *reader;
 
 	SCARDHANDLE crd;
 	SCARD_IO_REQUEST proto;
@@ -45,7 +45,7 @@ struct pcsc_context *pcsc_init() {
 		return NULL;
 	}
 	
-	unsigned char *supplied_reader = getenv("PCSC_READER");
+	char *supplied_reader = getenv("PCSC_READER");
 	if(supplied_reader) {
 		ctx->reader = strdup(supplied_reader);
 		return ctx;

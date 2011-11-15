@@ -11,7 +11,7 @@
 #include "config.h"
 
 static size_t append_string(const char *ptr, size_t size, size_t nmemb, void *userdata) {
-	unsigned char **str = (unsigned char**)userdata;
+	char **str = (char**)userdata;
 	size_t in_len = size*nmemb;
 	
 	if(!in_len)
@@ -46,8 +46,8 @@ int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
 		return 0;
 	}
 
-	unsigned char *result = NULL;
-	unsigned char errbuf[CURL_ERROR_SIZE];
+	char *result = NULL;
+	char errbuf[CURL_ERROR_SIZE];
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, append_string);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 	curl_easy_setopt(curl, CURLOPT_URL, CURL_GETKEY_URL);
@@ -55,7 +55,7 @@ int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
 
-	unsigned char argbuf[19];
+	char argbuf[19];
 	strcpy(argbuf, "UID=");
 	for(int i=0; i < 7; i++) {
 		snprintf(argbuf + 4 + 2*i, 3, "%02X", uid[i]);
@@ -74,7 +74,7 @@ int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
 		goto out;
 	}
 
-	unsigned char *keystr = strchr(result, ' ');
+	char *keystr = strchr(result, ' ');
 	if(!keystr || strlen(keystr+1) != 32) {
 		ret = 0;
 		goto out;
@@ -99,7 +99,7 @@ void open_door_curl() {
 		return;
 	}
 
-	unsigned char errbuf[CURL_ERROR_SIZE];
+	char errbuf[CURL_ERROR_SIZE];
 	curl_easy_setopt(curl, CURLOPT_URL, CURL_UNLOCK_URL);
 	curl_easy_setopt(curl, CURLOPT_USERPWD, CURL_UNLOCK_AUTH);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
