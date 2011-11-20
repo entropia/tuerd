@@ -86,7 +86,7 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 	} while(!(rs.dwEventState & SCARD_STATE_PRESENT));
 
 	DWORD proto;
-	LONG rv = SCardConnect(ctx->pcsc_ctx, ctx->reader, SCARD_SHARE_SHARED, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &ctx->crd, &proto);
+	LONG rv = SCardConnect(ctx->pcsc_ctx, ctx->reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &ctx->crd, &proto);
 	if(rv != SCARD_S_SUCCESS) {
 		log("SCardConnect: %s", pcsc_stringify_error(rv));
 		return NULL;
