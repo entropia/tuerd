@@ -28,9 +28,11 @@ int main(int argc, char **argv) {
 		}
 
 		int auth_success;
-		auth_success = desfire_authenticate(intf, get_key_curl);
+		uint8_t uid[7];
+
+		auth_success = desfire_authenticate(intf, get_key_curl, uid);
 		if(auth_success)
-			open_door_curl();
+			open_door_curl(uid);
 
 		pcsc_close(pcsc_ctx, intf);
 	}

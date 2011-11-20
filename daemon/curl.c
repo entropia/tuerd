@@ -90,7 +90,7 @@ out:
 	return ret;
 }
 
-void open_door_curl() {
+void open_door_curl(uint8_t uid[static 7]) {
 	CURL *curl;
 
 	curl = curl_easy_init();
@@ -104,8 +104,14 @@ void open_door_curl() {
 	curl_easy_setopt(curl, CURLOPT_USERPWD, CURL_UNLOCK_AUTH);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0L);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
+
+	char argbuf[19];
+	strcpy(argbuf, "UID=");
+	for(int i=0; i < 7; i++) {
+		snprintf(argbuf + 4 + 2*i, 3, "%02X", uid[i]);
+	}
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, argbuf);
 
 	if(curl_easy_perform(curl))
 		log("Request to open door failed: %s", errbuf);

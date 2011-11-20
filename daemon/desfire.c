@@ -5,7 +5,7 @@
 #include "desfire.h"
 #include "util.h"
 
-int desfire_authenticate(mf_interface *intf, key_callback_t cb) {
+int desfire_authenticate(mf_interface *intf, key_callback_t cb, uint8_t uid[static 7]) {
 	mf_version v;
 	mf_err_t ret;
 
@@ -14,6 +14,8 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb) {
 		log("mf_get_version: %s", mf_error_str(ret));
 		return 0;
 	}
+
+	memcpy(uid, v.uid, 7);
 
 	mf_key_t k;
 	if(!cb(v.uid, k)) {
