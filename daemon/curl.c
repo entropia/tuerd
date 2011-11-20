@@ -36,7 +36,7 @@ static size_t append_string(const char *ptr, size_t size, size_t nmemb, void *us
 	strncat(*str, ptr, in_len);
 }
 
-int get_key_curl(uint8_t uid[7], mf_key_t key_out) {
+int get_key_curl(uint8_t uid[static 7], mf_key_t key_out) {
 	int ret = 0;
 	CURL *curl;
 
