@@ -49,7 +49,7 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb, uint8_t uid[stat
 			fprintf(stderr, "\n");
 		}
 		else
-			fprintf(stderr, "mf_authenticate: %s", mf_error_str(ret));
+			log("mf_authenticate: %s", mf_error_str(ret));
 
 		return 0;
 	}
