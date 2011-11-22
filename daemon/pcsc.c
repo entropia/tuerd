@@ -42,7 +42,7 @@ struct pcsc_context *pcsc_init() {
 	LONG rv = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &ctx->pcsc_ctx);
 	if(rv != SCARD_S_SUCCESS) {
 		log("SCardEstablishContext: %s", pcsc_stringify_error(rv));
-		return NULL;
+		goto out;
 	}
 	
 	char *supplied_reader = getenv("PCSC_READER");
@@ -55,18 +55,40 @@ struct pcsc_context *pcsc_init() {
 		LONG rv = SCardListReaders(ctx->pcsc_ctx, NULL, NULL, &dwReaders);
 		if(rv != SCARD_S_SUCCESS) {
 			log("SCardListReaders: %s", pcsc_stringify_error(rv));
-			return NULL;
+			goto out;
 		}
 	
-		ctx->reader = malloc(dwReaders);
+		char *readers = malloc(dwReaders);
 		rv = SCardListReaders(ctx->pcsc_ctx, NULL, ctx->reader, &dwReaders);
 		if(rv != SCARD_S_SUCCESS) {
 			log("SCardListReaders: %s", pcsc_stringify_error(rv));
-			return NULL;
+			goto out;
 		}
+
+		char *pattern = getenv("PCSC_READER_PATTERN");
+		if(!pattern) {
+			ctx->reader = readers;
+			return ctx;
+		}
+
+		for(char *p = readers; p - readers < dwReaders; ) {
+			if(strstr(p, pattern)) {
+				ctx->reader = strdup(p);
+				free(readers);
+				return ctx;
+			}
+
+			p += strlen(p) + 1;
+		}
+
+		free(readers);
+
+		log("No match for specified pattern found");
 	}
 
-	return ctx;
+out:
+	free(ctx);
+	return NULL;
 }
 
 mf_interface *pcsc_wait(struct pcsc_context *ctx) {
