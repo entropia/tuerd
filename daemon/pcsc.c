@@ -49,8 +49,7 @@ struct pcsc_context *pcsc_init() {
 	if(supplied_reader) {
 		ctx->reader = strdup(supplied_reader);
 		return ctx;
-	}
-	else {
+	} else {
 		DWORD dwReaders;
 		LONG rv = SCardListReaders(ctx->pcsc_ctx, NULL, NULL, &dwReaders);
 		if(rv != SCARD_S_SUCCESS) {
