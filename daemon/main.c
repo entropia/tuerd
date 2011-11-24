@@ -15,6 +15,8 @@ int main(int argc, char **argv) {
 	if(getenv("TUERD_DEBUG"))
 		debug = 1;
 
+	debug("Debugging enabled. This allows people to be tracked!");
+
 	struct pcsc_context *pcsc_ctx = pcsc_init();
 	if(!pcsc_ctx) {
 		log("pcsc_init() failed");
