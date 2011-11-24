@@ -58,9 +58,10 @@ struct pcsc_context *pcsc_init() {
 		}
 	
 		char *readers = malloc(dwReaders);
-		rv = SCardListReaders(ctx->pcsc_ctx, NULL, ctx->reader, &dwReaders);
+		rv = SCardListReaders(ctx->pcsc_ctx, NULL, readers, &dwReaders);
 		if(rv != SCARD_S_SUCCESS) {
 			log("SCardListReaders: %s", pcsc_stringify_error(rv));
+			free(readers);
 			goto out;
 		}
 
