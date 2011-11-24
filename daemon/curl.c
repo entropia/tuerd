@@ -43,7 +43,7 @@ int get_key_curl(uint8_t uid[static 7], mf_key_t key_out) {
 
 	curl = curl_easy_init();
 	if(!curl) {
-		log("curl_easy_init() failed");
+		debug("curl_easy_init() failed");
 		return 0;
 	}
 
@@ -96,7 +96,7 @@ void open_door_curl(uint8_t uid[static 7]) {
 
 	curl = curl_easy_init();
 	if(!curl) {
-		log("curl_easy_init() failed");
+		debug("curl_easy_init() failed");
 		return;
 	}
 
@@ -115,7 +115,7 @@ void open_door_curl(uint8_t uid[static 7]) {
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, argbuf);
 
 	if(curl_easy_perform(curl))
-		log("Request to open door failed: %s", errbuf);
+		debug("Request to open door failed: %s", errbuf);
 
 	curl_easy_cleanup(curl);
 }

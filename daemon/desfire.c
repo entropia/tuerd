@@ -11,7 +11,7 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb, uint8_t uid[stat
 
 	ret = mf_get_version(intf, &v);
 	if(ret != MF_OK) {
-		log("mf_get_version: %s", mf_error_str(ret));
+		debug("mf_get_version: %s", mf_error_str(ret));
 		return 0;
 	}
 
@@ -32,7 +32,7 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb, uint8_t uid[stat
 
 	ret = mf_select_application(intf, 0xCA0523);
 	if(ret != MF_OK) {
-		log("mf_select_application: %s", mf_error_str(ret));
+		debug("mf_select_application: %s", mf_error_str(ret));
 		return 0;
 	}
 
@@ -51,7 +51,7 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb, uint8_t uid[stat
 		fprintf(stderr, "\n");
 	}
 	else
-		log("mf_authenticate: %s", mf_error_str(ret));
+		debug("mf_authenticate: %s", mf_error_str(ret));
 
 	return 0;
 }

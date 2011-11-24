@@ -22,7 +22,7 @@ static ssize_t pcsc_send(void *tr_data, uint8_t *data, size_t dlen, uint8_t **ou
 
 	LONG rv = SCardTransmit(ctx->crd, &ctx->proto, data, dlen, NULL, buf, &len);
 	if(rv != SCARD_S_SUCCESS) {
-		log("SCardTransmit: %s", pcsc_stringify_error(rv));
+		debug("SCardTransmit: %s", pcsc_stringify_error(rv));
 		return -1;
 	}
 
@@ -100,7 +100,7 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 	do {
 		LONG rv = SCardGetStatusChange(ctx->pcsc_ctx, INFINITE, &rs, 1);
 		if(rv != SCARD_S_SUCCESS) {
-			log("SCardGetStatusChange: %s", pcsc_stringify_error(rv));
+			debug("SCardGetStatusChange: %s", pcsc_stringify_error(rv));
 		}
 
 		rs.dwCurrentState = rs.dwEventState;
@@ -109,7 +109,7 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 	DWORD proto;
 	LONG rv = SCardConnect(ctx->pcsc_ctx, ctx->reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &ctx->crd, &proto);
 	if(rv != SCARD_S_SUCCESS) {
-		log("SCardConnect: %s", pcsc_stringify_error(rv));
+		debug("SCardConnect: %s", pcsc_stringify_error(rv));
 		return NULL;
 	}
 
