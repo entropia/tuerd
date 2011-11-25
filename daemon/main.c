@@ -26,8 +26,6 @@ int main(int argc, char **argv) {
 	while(1) {
 		mf_interface *intf;
 
-		sleep(1);
-
 		debug("Waiting for card");
 
 		intf = pcsc_wait(pcsc_ctx);
@@ -42,14 +40,18 @@ int main(int argc, char **argv) {
 		uint8_t uid[7];
 
 		auth_success = desfire_authenticate(intf, get_key_curl, uid);
+		pcsc_close(pcsc_ctx, intf);
+
 		if(auth_success) {
 			debug("Auth succeeded, opening door");
 			open_door_curl(uid);
+
+			sleep(10);
 		} else {
 			debug("Auth failed");
-		}
 
-		pcsc_close(pcsc_ctx, intf);
+			sleep(1);
+		}
 	}
 
 	return EXIT_SUCCESS;
