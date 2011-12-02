@@ -8,8 +8,6 @@
 
 #include "util.h"
 
-#include "config.h"
-
 static size_t append_string(const char *ptr, size_t size, size_t nmemb, void *userdata) {
 	char **str = (char**)userdata;
 	size_t in_len = size*nmemb;
