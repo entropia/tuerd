@@ -104,6 +104,14 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 			debug("SCardGetStatusChange: %s", pcsc_stringify_error(rv));
 		}
 
+		if(rs.dwEventState & SCARD_STATE_UNAVAILABLE) {
+			log("Reader state became unavailable");
+		}
+
+		if(rs.dwEventState & SCARD_STATE_UNKNOWN) {
+			log("Reader state became unknown");
+		}
+
 		rs.dwCurrentState = rs.dwEventState;
 	} while(!(rs.dwEventState & SCARD_STATE_PRESENT));
 
