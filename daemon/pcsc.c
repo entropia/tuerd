@@ -66,7 +66,7 @@ static char *get_reader(struct pcsc_context *ctx) {
 		DWORD dwReaders;
 		LONG rv = SCardListReaders(ctx->pcsc_ctx, NULL, NULL, &dwReaders);
 		if(rv == SCARD_E_NO_READERS_AVAILABLE)
-			goto fail;
+			goto no_reader;
 
 		if(rv != SCARD_S_SUCCESS) {
 			die("SCardListReaders: %s", pcsc_stringify_error(rv));
@@ -76,7 +76,7 @@ static char *get_reader(struct pcsc_context *ctx) {
 		rv = SCardListReaders(ctx->pcsc_ctx, NULL, readers, &dwReaders);
 		if(rv == SCARD_E_NO_READERS_AVAILABLE) {
 			free(readers);
-			goto fail;
+			goto no_reader;
 		}
 
 		if(rv != SCARD_S_SUCCESS) {
@@ -100,9 +100,10 @@ static char *get_reader(struct pcsc_context *ctx) {
 
 		free(readers);
 
-fail:
+no_reader:
 		log("Specified reader not found, waiting for change");
 		await_reader_change(ctx);
+		log("Got a reader-event");
 	}
 }
 
