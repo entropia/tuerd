@@ -65,12 +65,20 @@ static char *get_reader(struct pcsc_context *ctx) {
 	while(1) {
 		DWORD dwReaders;
 		LONG rv = SCardListReaders(ctx->pcsc_ctx, NULL, NULL, &dwReaders);
+		if(rv == SCARD_E_NO_READERS_AVAILABLE)
+			goto fail;
+
 		if(rv != SCARD_S_SUCCESS) {
 			die("SCardListReaders: %s", pcsc_stringify_error(rv));
 		}
 
 		char *readers = malloc(dwReaders);
 		rv = SCardListReaders(ctx->pcsc_ctx, NULL, readers, &dwReaders);
+		if(rv == SCARD_E_NO_READERS_AVAILABLE) {
+			free(readers);
+			goto fail;
+		}
+
 		if(rv != SCARD_S_SUCCESS) {
 			die("SCardListReaders: %s", pcsc_stringify_error(rv));
 		}
@@ -92,6 +100,7 @@ static char *get_reader(struct pcsc_context *ctx) {
 
 		free(readers);
 
+fail:
 		log("Specified reader not found, waiting for change");
 		await_reader_change(ctx);
 	}
