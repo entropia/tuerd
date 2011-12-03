@@ -69,6 +69,15 @@ int get_key_curl(uint8_t uid[static 7], mf_key_t key_out) {
 		goto out;
 	}
 
+	long http_response = 0;
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_response);
+	if(http_response != 200) {
+		debug("Got code %ld in response to get_key.\n", http_response);
+
+		ret = 0;
+		goto out;
+	}
+
 	if(!result || *result != 't') {
 		ret = 0;
 		goto out;
