@@ -31,7 +31,7 @@ static ssize_t pcsc_send(void *tr_data, uint8_t *data, size_t dlen, uint8_t **ou
 
 static void await_reader_change(struct pcsc_context *ctx) {
 	SCARD_READERSTATE rs = {
-		.szReader = "\\?PnP?\\Notification",
+		.szReader = "\\\\?PnP?\\Notification",
 		.dwCurrentState = SCARD_STATE_UNAWARE
 	};
 
