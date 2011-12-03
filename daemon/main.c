@@ -9,7 +9,20 @@
 
 int debug;
 
+void check_config() {
+	if(!getenv("TUERD_GETKEY_URL"))
+		die("Need TUERD_GETKEY_URL");
+
+	if(!getenv("TUERD_UNLOCK_URL"))
+		die("Need TUERD_UNLOCK_URL");
+
+	if(!getenv("TUERD_POLICY_AUTH"))
+		die("Need TUERD_POLICY_AUTH");
+}
+
 int main(int argc, char **argv) {
+	check_config();
+
 	log("tuerd starting up");
 
 	if(getenv("TUERD_DEBUG"))
