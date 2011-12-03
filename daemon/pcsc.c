@@ -125,9 +125,11 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 		}
 
 		if(rs.dwEventState & (SCARD_STATE_UNAVAILABLE | SCARD_STATE_UNKNOWN)) {
-			log("Reader went offline");
+			log("Reader is offline");
 
 			// TODO: Do fancy powercycling here?
+			log("Sleeping for 60 seconds in hope of self-healing");
+			sleep(60);
 
 			goto error;
 		}
