@@ -23,7 +23,7 @@ void check_config() {
 int main(int argc, char **argv) {
 	check_config();
 
-	log("tuerd starting up");
+	log("tuerd (rev " GIT_REV  ") starting up");
 
 	if(getenv("TUERD_DEBUG"))
 		debug = 1;
