@@ -119,6 +119,8 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 		LONG rv = SCardGetStatusChange(ctx->pcsc_ctx, INFINITE, &rs, 1);
 		if(rv != SCARD_S_SUCCESS) {
 			debug("SCardGetStatusChange: %s", pcsc_stringify_error(rv));
+
+			goto error;
 		}
 
 		if(rs.dwEventState & (SCARD_STATE_UNAVAILABLE | SCARD_STATE_UNKNOWN)) {
@@ -126,8 +128,7 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 
 			// TODO: Do fancy powercycling here?
 
-			free(reader);
-			return NULL;
+			goto error;
 		}
 
 		rs.dwCurrentState = rs.dwEventState;
@@ -137,7 +138,7 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 	LONG rv = SCardConnect(ctx->pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &ctx->crd, &proto);
 	if(rv != SCARD_S_SUCCESS) {
 		debug("SCardConnect: %s", pcsc_stringify_error(rv));
-		return NULL;
+		goto error;
 	}
 
 	free(reader);
@@ -153,6 +154,10 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 	}
 
 	return mf_interface_new(pcsc_send, ctx);
+
+error:
+	free(reader);
+	return NULL;
 }
 
 void pcsc_close(struct pcsc_context *ctx, mf_interface *intf) {
