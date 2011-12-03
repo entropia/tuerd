@@ -9,7 +9,6 @@
 
 struct pcsc_context {
 	SCARDCONTEXT pcsc_ctx;
-	char *reader;
 
 	SCARDHANDLE crd;
 	SCARD_IO_REQUEST proto;
@@ -30,6 +29,18 @@ static ssize_t pcsc_send(void *tr_data, uint8_t *data, size_t dlen, uint8_t **ou
 	return len;
 }
 
+static void await_reader_change(struct pcsc_context *ctx) {
+	SCARD_READERSTATE rs = {
+		.szReader = "\\?PnP?\\Notification",
+		.dwCurrentState = SCARD_STATE_UNAWARE
+	};
+
+	LONG rv = SCardGetStatusChange(ctx->pcsc_ctx, INFINITE, &rs, 1);
+	if(rv != SCARD_S_SUCCESS) {
+		die("await_reader_change() SCardGetStatusChange: %s", pcsc_stringify_error(rv));
+	}
+}
+
 struct pcsc_context *pcsc_init() {
 	struct pcsc_context *ctx;
 
@@ -42,40 +53,38 @@ struct pcsc_context *pcsc_init() {
 	LONG rv = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &ctx->pcsc_ctx);
 	if(rv != SCARD_S_SUCCESS) {
 		log("SCardEstablishContext: %s", pcsc_stringify_error(rv));
-		goto out;
+
+		free(ctx);
+		return NULL;
 	}
-	
-	char *supplied_reader = getenv("PCSC_READER");
-	if(supplied_reader) {
-		ctx->reader = strdup(supplied_reader);
-		return ctx;
-	} else {
+
+	return ctx;
+}
+
+static char *get_reader(struct pcsc_context *ctx) {
+	while(1) {
 		DWORD dwReaders;
 		LONG rv = SCardListReaders(ctx->pcsc_ctx, NULL, NULL, &dwReaders);
 		if(rv != SCARD_S_SUCCESS) {
-			log("SCardListReaders: %s", pcsc_stringify_error(rv));
-			goto out;
+			die("SCardListReaders: %s", pcsc_stringify_error(rv));
 		}
-	
+
 		char *readers = malloc(dwReaders);
 		rv = SCardListReaders(ctx->pcsc_ctx, NULL, readers, &dwReaders);
 		if(rv != SCARD_S_SUCCESS) {
-			log("SCardListReaders: %s", pcsc_stringify_error(rv));
-			free(readers);
-			goto out;
+			die("SCardListReaders: %s", pcsc_stringify_error(rv));
 		}
 
 		char *pattern = getenv("PCSC_READER_PATTERN");
 		if(!pattern) {
-			ctx->reader = readers;
-			return ctx;
+			return readers;
 		}
 
 		for(char *p = readers; p - readers < dwReaders; ) {
 			if(strstr(p, pattern)) {
-				ctx->reader = strdup(p);
+				char *reader = strdup(p);
 				free(readers);
-				return ctx;
+				return reader;
 			}
 
 			p += strlen(p) + 1;
@@ -83,19 +92,18 @@ struct pcsc_context *pcsc_init() {
 
 		free(readers);
 
-		log("No match for specified pattern found");
+		log("Specified reader not found, waiting for change");
+		await_reader_change(ctx);
 	}
-
-out:
-	free(ctx);
-	return NULL;
 }
 
 mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 	SCARD_READERSTATE rs;
 	memset(&rs, 0, sizeof(SCARD_READERSTATE));
 
-	rs.szReader = ctx->reader;
+	char *reader = get_reader(ctx);
+
+	rs.szReader = reader;
 	rs.dwCurrentState = SCARD_STATE_UNAWARE;
 
 	do {
@@ -104,23 +112,26 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 			debug("SCardGetStatusChange: %s", pcsc_stringify_error(rv));
 		}
 
-		if(rs.dwEventState & SCARD_STATE_UNAVAILABLE) {
-			log("Reader state became unavailable");
-		}
+		if(rs.dwEventState & (SCARD_STATE_UNAVAILABLE | SCARD_STATE_UNKNOWN)) {
+			log("Reader went offline");
 
-		if(rs.dwEventState & SCARD_STATE_UNKNOWN) {
-			log("Reader state became unknown");
+			// TODO: Do fancy powercycling here?
+
+			free(reader);
+			return NULL;
 		}
 
 		rs.dwCurrentState = rs.dwEventState;
 	} while(!(rs.dwEventState & SCARD_STATE_PRESENT));
 
 	DWORD proto;
-	LONG rv = SCardConnect(ctx->pcsc_ctx, ctx->reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &ctx->crd, &proto);
+	LONG rv = SCardConnect(ctx->pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &ctx->crd, &proto);
 	if(rv != SCARD_S_SUCCESS) {
 		debug("SCardConnect: %s", pcsc_stringify_error(rv));
 		return NULL;
 	}
+
+	free(reader);
 
 	switch(proto) {
 	case SCARD_PROTOCOL_T0:
