@@ -90,6 +90,10 @@ out:
 	return ret;
 }
 
+static size_t discard_write(const char *ptr, size_t size, size_t nmemb, void *userdata) {
+	return size * nmemb;
+}
+
 void open_door_curl(uint8_t uid[static 7]) {
 	CURL *curl;
 
@@ -100,6 +104,7 @@ void open_door_curl(uint8_t uid[static 7]) {
 	}
 
 	char errbuf[CURL_ERROR_SIZE];
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, discard_write);
 	curl_easy_setopt(curl, CURLOPT_URL, getenv("TUERD_UNLOCK_URL"));
 	curl_easy_setopt(curl, CURLOPT_USERPWD, getenv("TUERD_POLICY_AUTH"));
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
