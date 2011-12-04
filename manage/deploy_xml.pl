@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use lib qw(lib);
 
-use Clubtuer::DB;
 use JSON;
 
 sub picc_deploy {
