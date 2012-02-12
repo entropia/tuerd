@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 #include "pcsc.h"
 #include "desfire.h"
@@ -8,6 +9,7 @@
 #include "util.h"
 
 int debug;
+extern volatile sig_atomic_t open_requested;
 
 void check_config() {
 	if(!getenv("TUERD_GETKEY_URL"))
@@ -45,6 +47,14 @@ int main(int argc, char **argv) {
 		if(!intf) {
 			log("pcsc_wait() failed");
 			continue;
+		}
+
+		if(open_requested) {
+			uint8_t uid[7] = {0x23, 0x42, 0xD0, 0x05, 0xFA, 0x17, 0x00};
+			open_requested = 0;
+
+			log("Manual open requested, opening door now");
+			open_door_curl(uid);
 		}
 
 		debug("Successfully got card");

@@ -1,11 +1,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 #include <winscard.h>
 #include <libmf.h>
 
 #include "util.h"
+
+static volatile sig_atomic_t reader_crashed = 0;
+volatile sig_atomic_t open_requested = 0;
+static int failcnt = 0;
+
+void open_handler(int sig) {
+	if(reader_crashed)
+		open_requested = 1;
+}
 
 struct pcsc_context {
 	SCARDCONTEXT pcsc_ctx;
@@ -56,6 +66,15 @@ struct pcsc_context *pcsc_init() {
 
 		free(ctx);
 		return NULL;
+	}
+
+	struct sigaction sa;
+	sa.sa_handler = open_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+
+	if(sigaction(SIGUSR1, &sa, NULL) < 0) {
+		die("Registering signal handler failed");
 	}
 
 	return ctx;
@@ -126,6 +145,10 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 
 		if(rs.dwEventState & (SCARD_STATE_UNAVAILABLE | SCARD_STATE_UNKNOWN)) {
 			log("Reader is offline");
+			if(++failcnt >= 3) {
+				log("Failing too often, allowing for manual open");
+				reader_crashed = 1;
+			}
 
 			// TODO: Do fancy powercycling here?
 			log("Sleeping for 60 seconds in hope of self-healing");
@@ -155,6 +178,12 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 		ctx->proto = *SCARD_PCI_T1;
 		break;
 	}
+
+	if(reader_crashed)
+		log("Reader was broken recently. Disabling manual open now");
+
+	failcnt = 0;
+	reader_crashed = 0;
 
 	return mf_interface_new(pcsc_send, ctx);
 
