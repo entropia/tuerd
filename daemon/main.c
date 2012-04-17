@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
 			if(++failcnt >= 3 && !reader_crashed) {
 				log("Failing too often, allowing for manual open");
 				reader_crashed = 1;
+				push_reader_state_curl(1);
 			}
 
 			continue;
@@ -84,8 +85,10 @@ int main(int argc, char **argv) {
 		debug("Successfully got card");
 
 		// Getting card succeeded, reset crash state
-		if(reader_crashed)
+		if(reader_crashed) {
 			log("Reader was broken recently. Disabling manual open now");
+			push_reader_state_curl(0);
+		}
 
 		failcnt = 0;
 		reader_crashed = 0;
