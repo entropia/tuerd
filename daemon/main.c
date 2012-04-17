@@ -56,6 +56,9 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
+	// Initially, the reader is fine
+	push_reader_state_curl(0);
+
 	while(1) {
 		mf_interface *intf;
 
