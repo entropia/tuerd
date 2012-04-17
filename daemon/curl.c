@@ -155,6 +155,9 @@ void push_reader_state_curl(uint8_t bricked) {
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
 
+	char argbuf[1] = { 0 };
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, argbuf);
+
 	if(curl_easy_perform(curl))
 		debug("Pushing reader state failed: %s", errbuf);
 
