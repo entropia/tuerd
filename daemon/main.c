@@ -5,6 +5,7 @@
 
 #include "pcsc.h"
 #include "desfire.h"
+#include "upgrade.h"
 #include "curl.h"
 #include "util.h"
 
@@ -20,6 +21,7 @@ void check_config() {
 		"TUERD_GETKEY_URL",
 		"TUERD_UNLOCK_URL",
 		"TUERD_POLICY_AUTH",
+		"TUERD_UPGRADE_DIR",
 		NULL
 	};
 
@@ -57,6 +59,10 @@ int main(int argc, char **argv) {
 	struct pcsc_context *pcsc_ctx = pcsc_init();
 	if(!pcsc_ctx)
 		die("pcsc_init() failed");
+
+	debug("Loading upgrades");
+	if(load_upgrades())
+		die("Loading upgrades failed");
 
 	// Initially, the reader is fine
 	push_reader_state_curl(0);
@@ -106,7 +112,16 @@ int main(int argc, char **argv) {
 		pcsc_close(pcsc_ctx, intf);
 
 		if(auth_success) {
-			debug("Auth succeeded, opening door");
+			debug("Auth succeeded");
+
+			debug("Checking for upgrades");
+			int level = do_upgrades(intf);
+			if(level < 0)
+				log("Upgrading card failed");
+			if(level)
+				debug("Successfully upgraded card to level %u", level);
+
+			debug("Opening door");
 			open_door_curl(uid);
 
 			sleep(10);
