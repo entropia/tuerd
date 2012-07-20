@@ -1,2 +1,0 @@
-TUERD_GETKEY_URL="http://127.0.0.1:8080/auth/getkey"
-TUERD_UNLOCK_URL="http://127.0.0.1:8080/auth/succeeded"

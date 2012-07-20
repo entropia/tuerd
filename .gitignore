@@ -1,0 +1,3 @@
+*.o
+daemon/tuerd
+manage/deploy_club
