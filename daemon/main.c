@@ -55,10 +55,8 @@ int main(int argc, char **argv) {
 	debug("Debugging enabled. This allows people to be tracked!");
 
 	struct pcsc_context *pcsc_ctx = pcsc_init();
-	if(!pcsc_ctx) {
-		log("pcsc_init() failed");
-		return EXIT_FAILURE;
-	}
+	if(!pcsc_ctx)
+		die("pcsc_init() failed");
 
 	// Initially, the reader is fine
 	push_reader_state_curl(0);
