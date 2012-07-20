@@ -14,14 +14,18 @@ static volatile sig_atomic_t reader_crashed = 0, open_requested = 0;
 static int failcnt = 0;
 
 void check_config() {
-	if(!getenv("TUERD_GETKEY_URL"))
-		die("Need TUERD_GETKEY_URL");
+	const char *params[] = {
+		"TUERD_READER_BRICKED_URL",
+		"TUERD_READER_UNBRICKED_URL",
+		"TUERD_GETKEY_URL",
+		"TUERD_UNLOCK_URL",
+		"TUERD_POLICY_AUTH",
+		NULL
+	};
 
-	if(!getenv("TUERD_UNLOCK_URL"))
-		die("Need TUERD_UNLOCK_URL");
-
-	if(!getenv("TUERD_POLICY_AUTH"))
-		die("Need TUERD_POLICY_AUTH");
+	for(int i = 0; params[i]; i++)
+		if(!getenv(params[i]))
+			die("Need %s", params[i]);
 }
 
 void open_handler(int sig) {
