@@ -12,4 +12,4 @@ all: $(OBJS)
 	gcc -g -lcurl -lpcsclite -L../../libmf/build/src/ -lmf -o tuerd $(OBJS)
 
 clean:
-	rm *.o tuerd
+	rm -f *.o tuerd
