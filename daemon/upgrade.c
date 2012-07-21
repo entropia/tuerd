@@ -144,5 +144,5 @@ int do_upgrades(mf_interface *intf, mf_session *sess, uint8_t uid[static 7]) {
 		return -1;
 	}
 
-	return 0;
+	return level;
 }
