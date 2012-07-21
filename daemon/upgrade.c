@@ -58,7 +58,7 @@ int load_upgrades() {
 
 		void *dlh = dlopen(upgrade_path, RTLD_LAZY);
 		if(!dlh) {
-			log_errno("Opening upgrade %s failed", de->d_name);
+			log("Opening upgrade %s failed: %s", de->d_name, dlerror());
 			goto dir_out;
 		}
 
