@@ -109,7 +109,7 @@ static int64_t get_level(mf_interface *intf) {
 	return value;
 }
 
-uint32_t do_upgrades(mf_interface *intf, struct keyset *keyset, mf_session *sess, uint8_t uid[static 7]) {
+int64_t do_upgrades(mf_interface *intf, struct keyset *keyset, mf_session *sess, uint8_t uid[static 7]) {
 	int64_t level = get_level(intf);
 	if(level < 0) {
 		debug("Retrieving level failed");
@@ -149,5 +149,5 @@ uint32_t do_upgrades(mf_interface *intf, struct keyset *keyset, mf_session *sess
 		return -1;
 	}
 
-	return (uint32_t)level;
+	return level;
 }

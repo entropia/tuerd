@@ -125,11 +125,11 @@ int main(int argc, char **argv) {
 			debug("Auth succeeded");
 
 			debug("Checking for upgrades");
-			uint32_t level = do_upgrades(intf, &keyset, &sess, uid);
+			int64_t level = do_upgrades(intf, &keyset, &sess, uid);
 			if(level < 0)
 				log("Upgrading card failed");
-			if(level)
-				debug("Successfully upgraded card to level %u", level);
+			else if(level)
+				debug("Successfully upgraded card to level %u", (uint32_t)level);
 
 			debug("Opening door");
 			open_door_curl(uid);
