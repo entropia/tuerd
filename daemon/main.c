@@ -107,15 +107,16 @@ int main(int argc, char **argv) {
 		// Authenticate card
 		int auth_success;
 		uint8_t uid[7];
+		mf_session sess;
 
-		auth_success = desfire_authenticate(intf, get_key_curl, uid);
+		auth_success = desfire_authenticate(intf, get_key_curl, &sess, uid);
 		pcsc_close(pcsc_ctx, intf);
 
 		if(auth_success) {
 			debug("Auth succeeded");
 
 			debug("Checking for upgrades");
-			int level = do_upgrades(intf);
+			int level = do_upgrades(intf, &sess, uid);
 			if(level < 0)
 				log("Upgrading card failed");
 			if(level)
