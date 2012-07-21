@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
 			debug("Auth succeeded");
 
 			debug("Checking for upgrades");
-			int level = do_upgrades(intf, &sess, uid);
+			uint32_t level = do_upgrades(intf, &sess, uid);
 			if(level < 0)
 				log("Upgrading card failed");
 			if(level)
