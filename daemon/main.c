@@ -120,7 +120,6 @@ int main(int argc, char **argv) {
 
 		mf_session sess;
 		int auth_success = desfire_authenticate(intf, &keyset, uid, &sess);
-		pcsc_close(pcsc_ctx, intf);
 
 		if(auth_success) {
 			debug("Auth succeeded");
@@ -135,10 +134,12 @@ int main(int argc, char **argv) {
 			debug("Opening door");
 			open_door_curl(uid);
 
+			pcsc_close(pcsc_ctx, intf);
 			sleep(10);
 		} else {
 			debug("Auth failed");
 
+			pcsc_close(pcsc_ctx, intf);
 			sleep(1);
 		}
 	}
