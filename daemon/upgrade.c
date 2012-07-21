@@ -129,6 +129,10 @@ int do_upgrades(mf_interface *intf, mf_session *sess, uint8_t uid[static 7]) {
 		level++;
 	}
 
+	if(level == old_level) { // no upgrades have been applied
+		return 0;
+	}
+
 	mf_err_t ret;
 	ret = mf_credit(intf, NULL, 0, level - old_level);
 	if(ret != MF_OK) {
