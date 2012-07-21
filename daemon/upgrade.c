@@ -91,10 +91,58 @@ out:
 	return ret;
 }
 
-static int get_level(mf_interface *intf) {
+static int64_t get_level(mf_interface *intf) {
+	mf_err_t ret;
+	uint32_t value;
 
+	ret = mf_get_value(intf, NULL, 0, &value);
+	if(ret == MF_ERR_FILE_NOT_FOUND) {
+		// Pre-patchlevel cards have level 0
+		return 0;
+	}
+	if(ret != MF_OK) {
+		 debug("mf_get_version: %s", mf_error_str(ret));
+		 return -1;
+	}
+
+	return value;
 }
 
-int do_upgrades(mf_interface *intf) {
+int do_upgrades(mf_interface *intf, mf_session *sess, uint8_t uid[static 7]) {
+	int64_t level = get_level(intf);
+	if(level < 0) {
+		debug("Retrieving level failed");
+		return -1;
+	}
 
+	int64_t old_level = level;
+	for(int i = 0; i < upgrades_cnt; i++) {
+		if(upgrades[i].level <= level)
+			continue;
+
+		debug("Applying upgrade to level %u", upgrades[i].level);
+		if(upgrades[i].apply(intf) < 0) {
+			debug("Upgrade failed, aborting");
+			break;
+		}
+
+		level++;
+	}
+
+	mf_err_t ret;
+	ret = mf_credit(intf, NULL, 0, level - old_level);
+	if(ret != MF_OK) {
+		log("Upping level failed: %s. UID %s is now inconsistent.",
+				mf_error_str(ret), format_uid(uid));
+		return -1;
+	}
+
+	ret = mf_commit_transaction(intf);
+	if(ret != MF_OK) {
+		log("Committing transaction failed: %s. UID %s is now inconsistent.",
+				mf_error_str(ret), format_uid(uid));
+		return -1;
+	}
+
+	return 0;
 }
