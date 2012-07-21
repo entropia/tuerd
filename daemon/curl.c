@@ -6,6 +6,8 @@
 #include <libmf.h>
 #include <curl/curl.h>
 
+#include "desfire.h"
+#include "keyset.h"
 #include "util.h"
 
 static size_t append_string(const char *ptr, size_t size, size_t nmemb, void *userdata) {
@@ -35,7 +37,7 @@ static size_t append_string(const char *ptr, size_t size, size_t nmemb, void *us
 	return in_len;
 }
 
-int get_key_curl(uint8_t uid[static 7], mf_key_t key_out) {
+int get_key_curl(uint8_t uid[static 7], struct keyset *keyset) {
 	int ret = 0;
 	CURL *curl;
 
@@ -89,7 +91,7 @@ int get_key_curl(uint8_t uid[static 7], mf_key_t key_out) {
 		goto out;
 	}
 
-	mf_key_parse(key_out, keystr+1);
+	mf_key_parse(keyset->door_key, keystr+1);
 
 	ret = 1;
 out:

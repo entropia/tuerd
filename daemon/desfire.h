@@ -1,4 +1,10 @@
-#include <libmf.h>
+#ifndef _DESFIRE_H_
+#define _DESFIRE_H_
 
-typedef int (*key_callback_t)(uint8_t uid[7], mf_key_t key);
-int desfire_authenticate(mf_interface *intf, key_callback_t cb, mf_session *sess, uint8_t uid[static 7]);
+#include <libmf.h>
+#include "keyset.h"
+
+int desfire_get_uid(mf_interface *intf, uint8_t uid[static 7]);
+int desfire_authenticate(mf_interface *intf, struct keyset *keyset, uint8_t uid[static 7], mf_session *sess);
+
+#endif /* _DESFIRE_H_ */

@@ -7,6 +7,7 @@
 #include "desfire.h"
 #include "upgrade.h"
 #include "curl.h"
+#include "keyset.h"
 #include "util.h"
 
 int debug;
@@ -105,18 +106,27 @@ int main(int argc, char **argv) {
 		reader_crashed = 0;
 
 		// Authenticate card
-		int auth_success;
 		uint8_t uid[7];
-		mf_session sess;
+		if(desfire_get_uid(intf, uid) < 0) {
+			debug("Retrieving UID failed");
+			continue;
+		}
 
-		auth_success = desfire_authenticate(intf, get_key_curl, &sess, uid);
+		struct keyset keyset;
+		if(!get_key_curl(uid, &keyset)) {
+			log("Policy did not permit UID %s\n", format_uid(uid));
+			continue;
+		}
+
+		mf_session sess;
+		int auth_success = desfire_authenticate(intf, &keyset, uid, &sess);
 		pcsc_close(pcsc_ctx, intf);
 
 		if(auth_success) {
 			debug("Auth succeeded");
 
 			debug("Checking for upgrades");
-			uint32_t level = do_upgrades(intf, &sess, uid);
+			uint32_t level = do_upgrades(intf, &keyset, &sess, uid);
 			if(level < 0)
 				log("Upgrading card failed");
 			if(level)
