@@ -127,43 +127,43 @@ int64_t do_upgrades(mf_interface *intf, struct keyset *keyset, mf_session *sess,
 			break;
 		}
 
+		mf_err_t ret;
+
+		ret = mf_select_application(intf, 0xCA0523);
+		if(ret != MF_OK) {
+			debug("mf_select_application: %s", mf_error_str(ret));
+			log("Upping level(mf_select_application) failed: %s. UID %s is now inconsistent.",
+					mf_error_str(ret), format_uid(uid));
+			return -1;
+		}
+
+		ret = mf_authenticate(intf, 0xD, keyset->door_key, sess);
+		if(ret != MF_OK) {
+			debug("mf_authenticate: %s", mf_error_str(ret));
+			log("Upping level(mf_authenticate) failed: %s. UID %s is now inconsistent.",
+					mf_error_str(ret), format_uid(uid));
+			return -1;
+		}
+
+		ret = mf_credit(intf, NULL, 0, level - old_level);
+		if(ret != MF_OK) {
+			log("Upping level(mf_credit) failed: %s. UID %s is now inconsistent.",
+					mf_error_str(ret), format_uid(uid));
+			return -1;
+		}
+
+		ret = mf_commit_transaction(intf);
+		if(ret != MF_OK) {
+			log("Upping level(mf_commit_transaction) failed: %s. UID %s is now inconsistent.",
+					mf_error_str(ret), format_uid(uid));
+			return -1;
+		}
+
 		level++;
 	}
 
 	if(level == old_level) { // no upgrades have been applied
 		return 0;
-	}
-
-	mf_err_t ret;
-
-	ret = mf_select_application(intf, 0xCA0523);
-	if(ret != MF_OK) {
-		debug("mf_select_application: %s", mf_error_str(ret));
-		log("Upping level(mf_select_application) failed: %s. UID %s is now inconsistent.",
-				mf_error_str(ret), format_uid(uid));
-		return -1;
-	}
-
-	ret = mf_authenticate(intf, 0xD, keyset->door_key, sess);
-	if(ret != MF_OK) {
-		debug("mf_authenticate: %s", mf_error_str(ret));
-		log("Upping level(mf_authenticate) failed: %s. UID %s is now inconsistent.",
-				mf_error_str(ret), format_uid(uid));
-		return -1;
-	}
-
-	ret = mf_credit(intf, NULL, 0, level - old_level);
-	if(ret != MF_OK) {
-		log("Upping level(mf_credit) failed: %s. UID %s is now inconsistent.",
-				mf_error_str(ret), format_uid(uid));
-		return -1;
-	}
-
-	ret = mf_commit_transaction(intf);
-	if(ret != MF_OK) {
-		log("Upping level(mf_commit_transaction) failed: %s. UID %s is now inconsistent.",
-				mf_error_str(ret), format_uid(uid));
-		return -1;
 	}
 
 	return level;
