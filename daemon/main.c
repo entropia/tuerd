@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
 
 		debug("Waiting for card");
 
+		// If a manual open was requested, do it now.
 		if(open_requested) {
 			uint8_t uid[7] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 			open_requested = 0;

@@ -9,6 +9,9 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb, uint8_t uid[stat
 	mf_version v;
 	mf_err_t ret;
 
+	/*
+	 * Retrieve the card's UID
+	 */
 	ret = mf_get_version(intf, &v);
 	if(ret != MF_OK) {
 		debug("mf_get_version: %s", mf_error_str(ret));
@@ -17,6 +20,9 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb, uint8_t uid[stat
 
 	memcpy(uid, v.uid, 7);
 
+	/*
+	 * Check whether the UID is permitted and retrieve the keys.
+	 */
 	mf_key_t k;
 	if(!cb(v.uid, k)) {
 		fprintf(stderr, "Policy did not permit UID ");
@@ -30,6 +36,9 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb, uint8_t uid[stat
 		return 0;
 	}
 
+	/*
+	 * Do the authentication handshake
+	 */
 	ret = mf_select_application(intf, 0xCA0523);
 	if(ret != MF_OK) {
 		debug("mf_select_application: %s", mf_error_str(ret));
@@ -37,7 +46,7 @@ int desfire_authenticate(mf_interface *intf, key_callback_t cb, uint8_t uid[stat
 	}
 
 	ret = mf_authenticate(intf, 0xD, k, NULL);
-	if(ret == MF_OK)
+	if(ret == MF_OK) // Handshake completed successfully
 		return 1;
 
 	if(ret == MF_ERR_AUTHENTICATION_ERROR ||

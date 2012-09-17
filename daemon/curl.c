@@ -35,6 +35,9 @@ static size_t append_string(const char *ptr, size_t size, size_t nmemb, void *us
 	return in_len;
 }
 
+/*
+ * Check whether an UID is permitted and retrieve the associated keys.
+ */
 int get_key_curl(uint8_t uid[static 7], mf_key_t key_out) {
 	int ret = 0;
 	CURL *curl;
@@ -103,6 +106,11 @@ static size_t discard_write(const char *ptr, size_t size, size_t nmemb, void *us
 	return size * nmemb;
 }
 
+/*
+ * Request to open the door.
+ *
+ * The UID is sent again for accounting purposes.
+ */
 void open_door_curl(uint8_t uid[static 7]) {
 	CURL *curl;
 
@@ -133,6 +141,9 @@ void open_door_curl(uint8_t uid[static 7]) {
 	curl_easy_cleanup(curl);
 }
 
+/*
+ * Notify the policy server of the reader's state.
+ */
 void push_reader_state_curl(uint8_t bricked) {
 	CURL *curl;
 
