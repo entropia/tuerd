@@ -1,0 +1,16 @@
+#!/bin/sh
+
+exec 2>&1
+
+export PCSC_READER_PATTERN="Contactless"
+export TUERD_GETKEY_URL="http://127.0.0.1:8080/auth/getkey"
+export TUERD_UNLOCK_URL="http://127.0.0.1:8080/auth/succeeded"
+export TUERD_POLICY_AUTH="username:password"
+export TUERD_READER_BRICKED_URL="http://127.0.0.1:8080/auth/cardreader/fuckedup"
+export TUERD_READER_UNBRICKED_URL="http://127.0.0.1:8080/auth/cardreader/fixed"
+export LIBMF_DEBUG=0
+export TUERD_DEBUG=0
+
+echo $$ > /var/run/tuerd.pid
+
+exec chpst -utuerd:tuerd /usr/local/sbin/tuerd
