@@ -6,6 +6,7 @@
 #include <libmf.h>
 
 #include "util.h"
+#include "powercycle.h"
 
 struct pcsc_context {
 	SCARDCONTEXT pcsc_ctx;
@@ -127,9 +128,9 @@ mf_interface *pcsc_wait(struct pcsc_context *ctx) {
 		if(rs.dwEventState & (SCARD_STATE_UNAVAILABLE | SCARD_STATE_UNKNOWN)) {
 			log("Reader is offline");
 
-			// TODO: Do fancy powercycling here?
-			log("Sleeping for 60 seconds in hope of self-healing");
-			sleep(60);
+			log("Powercycling and sleeping for 20 seconds in hope of self-healing");
+			powercycle_reader();
+			sleep(20);
 
 			goto error;
 		}

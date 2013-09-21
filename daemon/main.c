@@ -7,7 +7,6 @@
 #include "desfire.h"
 #include "curl.h"
 #include "util.h"
-#include "powercycle.h"
 
 int debug;
 
@@ -84,8 +83,6 @@ int main(int argc, char **argv) {
 				log("Failing too often, allowing for manual open");
 				reader_crashed = 1;
 				push_reader_state_curl(1);
-
-				powercycle_reader();
 			}
 
 			continue;
