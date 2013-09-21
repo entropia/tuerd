@@ -1,7 +1,8 @@
 OBJS=curl.o\
 	desfire.o\
 	main.o\
-	pcsc.o
+	pcsc.o\
+	powercycle.o
 
 GIT_REV=$(shell git rev-parse HEAD)
 
