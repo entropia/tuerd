@@ -86,8 +86,28 @@ int get_key_curl(uint8_t uid[static 7], mf_key_t key_out) {
 		goto out;
 	}
 
-	char *keystr = strchr(result, ' ');
-	if(!keystr || (mf_key_parse(key_out, keystr+1) < 0)) {
+	char *keystart = strchr(result, ' ') + 1;
+	if(!keystart || *keystart == '\0') {
+		debug("Invalid key response: No key found");
+
+		ret = 0;
+		goto out;
+	}
+
+	char *keyend = strchr(keystart, ' ');
+
+	if(!keyend || keyend - keystart != 32) {
+		debug("Invalid key response: Key has wrong size");
+
+		ret = 0;
+		goto out;
+	}
+
+	char keystr[33];
+	memcpy(keystr, keystart, keyend - keystart);
+	keystr[32] = 0;
+
+	if(mf_key_parse(key_out, keystr) < 0) {
 		debug("Parsing key from response failed");
 
 		ret = 0;
