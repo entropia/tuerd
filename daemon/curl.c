@@ -87,7 +87,9 @@ int get_key_curl(uint8_t uid[static 7], mf_key_t key_out) {
 	}
 
 	char *keystr = strchr(result, ' ');
-	if(!keystr || !mf_key_parse(key_out, keystr+1)) {
+	if(!keystr || (mf_key_parse(key_out, keystr+1) < 0)) {
+		debug("Parsing key from response failed");
+
 		ret = 0;
 		goto out;
 	}
