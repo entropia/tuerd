@@ -87,12 +87,10 @@ int get_key_curl(uint8_t uid[static 7], mf_key_t key_out) {
 	}
 
 	char *keystr = strchr(result, ' ');
-	if(!keystr || strlen(keystr+1) < 32) {
+	if(!keystr || !mf_key_parse(key_out, keystr+1)) {
 		ret = 0;
 		goto out;
 	}
-
-	mf_key_parse(key_out, keystr+1);
 
 	ret = 1;
 out:
