@@ -160,37 +160,3 @@ void open_door_curl(uint8_t uid[static 7]) {
 
 	curl_easy_cleanup(curl);
 }
-
-/*
- * Notify the policy server of the reader's state.
- */
-void push_reader_state_curl(uint8_t bricked) {
-	CURL *curl;
-
-	curl = curl_easy_init();
-	if(!curl) {
-		debug("curl_easy_init() failed");
-		return;
-	}
-
-	char errbuf[CURL_ERROR_SIZE];
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, discard_write);
-
-	if(bricked)
-		curl_easy_setopt(curl, CURLOPT_URL, getenv("TUERD_READER_BRICKED_URL"));
-	else
-		curl_easy_setopt(curl, CURLOPT_URL, getenv("TUERD_READER_UNBRICKED_URL"));
-
-	curl_easy_setopt(curl, CURLOPT_USERPWD, getenv("TUERD_POLICY_AUTH"));
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
-	curl_easy_setopt(curl, CURLOPT_POST, 1L);
-	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
-
-	char argbuf[1] = { 0 };
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, argbuf);
-
-	if(curl_easy_perform(curl))
-		debug("Pushing reader state failed: %s", errbuf);
-
-	curl_easy_cleanup(curl);
-}

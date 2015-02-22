@@ -16,8 +16,6 @@ static int failcnt = 0;
 
 void check_config() {
 	const char *params[] = {
-		"TUERD_READER_BRICKED_URL",
-		"TUERD_READER_UNBRICKED_URL",
 		"TUERD_GETKEY_URL",
 		"TUERD_UNLOCK_URL",
 		"TUERD_POLICY_AUTH",
@@ -59,9 +57,6 @@ int main(int argc, char **argv) {
 	if(!pcsc_ctx)
 		die("pcsc_init() failed");
 
-	// Initially, the reader is fine
-	push_reader_state_curl(0);
-
 	while(1) {
 		mf_interface *intf;
 
@@ -83,7 +78,6 @@ int main(int argc, char **argv) {
 			if(++failcnt >= 3 && !reader_crashed) {
 				log("Failing too often, allowing for manual open");
 				reader_crashed = 1;
-				push_reader_state_curl(1);
 			}
 
 			continue;
@@ -94,7 +88,6 @@ int main(int argc, char **argv) {
 		// Getting card succeeded, reset crash state
 		if(reader_crashed) {
 			log("Reader was broken recently. Disabling manual open now");
-			push_reader_state_curl(0);
 		}
 
 		failcnt = 0;
