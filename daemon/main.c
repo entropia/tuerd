@@ -6,6 +6,7 @@
 #include "pcsc.h"
 #include "desfire.h"
 #include "curl.h"
+#include "git.h"
 #include "util.h"
 
 int debug;
@@ -103,7 +104,7 @@ int main(int argc, char **argv) {
 		int auth_success;
 		uint8_t uid[7];
 
-		auth_success = desfire_authenticate(intf, get_key_curl, uid);
+		auth_success = desfire_authenticate(intf, get_key_git, uid);
 		pcsc_close(pcsc_ctx, intf);
 
 		if(auth_success) {
