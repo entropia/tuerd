@@ -3,6 +3,8 @@
 #include <string.h>
 #include <signal.h>
 
+#include <git2.h>
+
 #include "pcsc.h"
 #include "desfire.h"
 #include "curl.h"
@@ -56,6 +58,9 @@ int main(int argc, char **argv) {
 	struct pcsc_context *pcsc_ctx = pcsc_init();
 	if(!pcsc_ctx)
 		die("pcsc_init() failed");
+
+	git_threads_init();
+	atexit(git_threads_shutdown);
 
 	while(1) {
 		mf_interface *intf;

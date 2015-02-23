@@ -28,9 +28,6 @@ static int check_lg2(int error, const char *message) {
 
 static int read_file_git(const char *repo_path, const char *name, void **out, size_t *outlen) {
 	int ret, retcode = -1;
-	ret = git_threads_init();
-	if(check_lg2(ret, "initializing libgit"))
-		return -1;
 
 	git_repository *repo;
 	ret = git_repository_open_bare(&repo, repo_path);
@@ -84,7 +81,6 @@ out_master:
 out_repo:
 	git_repository_free(repo);
 out:
-	git_threads_shutdown();
 	return retcode;
 }
 
