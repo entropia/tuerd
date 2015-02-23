@@ -125,7 +125,7 @@ int get_key_git(uint8_t uid[static 7], mf_key_t key_out) {
 		goto obj_out;
 	}
 
-	if(active != json_true()) {
+	if(!json_is_true(active)) {
 		debug("policy: key is not active");
 		goto obj_out;
 	}
