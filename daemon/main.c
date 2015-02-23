@@ -17,7 +17,6 @@ static int failcnt = 0;
 void check_config() {
 	const char *params[] = {
 		"TUERD_REPO_PATH",
-		"TUERD_GETKEY_URL",
 		"TUERD_UNLOCK_URL",
 		"TUERD_POLICY_AUTH",
 		NULL
