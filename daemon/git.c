@@ -27,7 +27,7 @@ static int check_lg2(int error, const char *message) {
 }
 
 static int read_file_git(const char *repo_path, const char *name, void **out, size_t *outlen) {
-	int ret;
+	int ret, retcode = -1;
 	ret = git_threads_init();
 	if(check_lg2(ret, "initializing libgit"))
 		return -1;
@@ -74,7 +74,7 @@ static int read_file_git(const char *repo_path, const char *name, void **out, si
 	*out = malloc(*outlen);
 	memcpy(*out, data, *outlen);
 
-	return 0;
+	retcode = 0;
 
 	git_object_free(file);
 out_tree:
@@ -85,7 +85,7 @@ out_repo:
 	git_repository_free(repo);
 out:
 	git_threads_shutdown();
-	return -1;
+	return retcode;
 }
 
 /*
