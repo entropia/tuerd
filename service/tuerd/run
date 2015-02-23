@@ -4,10 +4,8 @@ exec 2>&1
 
 export PCSC_READER_PATTERN="Contactless"
 export TUERD_GETKEY_URL="http://127.0.0.1:8080/auth/getkey"
-export TUERD_UNLOCK_URL="http://127.0.0.1:8080/auth/succeeded"
 export TUERD_POLICY_AUTH="username:password"
-export TUERD_READER_BRICKED_URL="http://127.0.0.1:8080/auth/cardreader/fuckedup"
-export TUERD_READER_UNBRICKED_URL="http://127.0.0.1:8080/auth/cardreader/fixed"
+export TUERD_GIT_REPO="/home/clubmonitor/git"
 export LIBMF_DEBUG=0
 export TUERD_DEBUG=0
 
