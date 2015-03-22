@@ -2,8 +2,7 @@ OBJS=door.o\
 	desfire.o\
 	main.o\
 	pcsc.o\
-	git.o\
-	powercycle.o
+	git.o
 
 GIT_REV=$(shell git rev-parse HEAD)
 

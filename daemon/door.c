@@ -29,5 +29,12 @@ void open_door(void) {
 	pid_t pid = door_pid();
 
 	if(kill(pid, SIGUSR2) < 0)
-		perror("Sending unlock signal failed");
+		perror("sending unlock signal failed");
+}
+
+void powercycle_reader(void) {
+	pid_t pid = door_pid();
+
+	if(kill(pid, SIGHUP) < 0)
+		perror("sending powercycle signal failed");
 }
