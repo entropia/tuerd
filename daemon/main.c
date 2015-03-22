@@ -7,7 +7,7 @@
 
 #include "pcsc.h"
 #include "desfire.h"
-#include "curl.h"
+#include "door.h"
 #include "git.h"
 #include "util.h"
 
@@ -69,11 +69,10 @@ int main(int argc, char **argv) {
 
 		// If a manual open was requested, do it now.
 		if(open_requested) {
-			uint8_t uid[7] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 			open_requested = 0;
 
 			log("Manual open requested, opening door now");
-			open_door_curl(uid);
+			open_door();
 		}
 
 		intf = pcsc_wait(pcsc_ctx);
@@ -107,7 +106,7 @@ int main(int argc, char **argv) {
 
 		if(auth_success) {
 			debug("Auth succeeded, opening door");
-			open_door_curl(uid);
+			open_door();
 
 			sleep(10);
 		} else {
