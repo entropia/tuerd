@@ -52,13 +52,13 @@ int print_buffer(FILE *f, uint8_t *b, size_t n) {
 }
 
 void json_key(const char *name, mf_key_t k) {
-	printf("\t\"%s\": \"", name);
+	printf("   \"%s\" : \"", name);
 	print_buffer(stdout, k, 16);
 	printf("\"");
 }
 
 void json_uid(mf_version *v) {
-	printf("\t\"uid\": \"");
+	printf("   \"uid\" : \"");
 	print_buffer(stdout, v->uid, 7);
 	printf("\"");
 }
@@ -124,6 +124,11 @@ int log_action(mf_version *v, mf_key_t master, mf_key_t amk, mf_key_t door) {
 }
 
 int main(int argc, char **argv) {
+	if(argc < 2) {
+		fprintf(stderr, "usage: %s name\n", argv[0]);
+		return EXIT_FAILURE;
+	}
+
 	mf_interface *intf;
 	intf = pcsc_init();
 
@@ -163,10 +168,19 @@ int main(int argc, char **argv) {
 	}
 
 	printf("{\n");
-	json_uid(&v); printf(",\n");
-	json_key("picc_key", master); printf(",\n");
-	json_key("ca0523_master_key", amk); printf(",\n");
+	printf("   \"active\" : true,\n");
+
 	json_key("ca0523_door_key", door); printf("\n");
+	json_key("ca0523_master_key", amk); printf(",\n");
+
+	printf("   \"personal\" : {\n");
+	printf("      \"name\" : \"%\",\n", argv[1]);
+	printf("      \"sponsors\" : [],\n");
+	printf("   },\n");
+
+	json_key("picc_key", master); printf(",\n");
+	json_uid(&v); printf(",\n");
+
 	printf("}\n");
 
 	ret = mf_change_key_settings(intf, &s, MF_PERM_CHANGE_CFG | MF_PERM_CHANGE_KEY);
