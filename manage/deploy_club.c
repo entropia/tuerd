@@ -79,7 +79,7 @@ int log_action(mf_version *v, mf_key_t master, mf_key_t amk, mf_key_t door) {
 		fprintf(stderr, "Writing log failed");
 		return -1;
 	}
-	
+
 	fprintf(f, " ");
 	if(print_buffer(f, master, 16)) {
 		fprintf(stderr, "Writing log failed");
@@ -98,7 +98,7 @@ int log_action(mf_version *v, mf_key_t master, mf_key_t amk, mf_key_t door) {
 		return -1;
 	}
 	fprintf(f, "\n");
-	
+
 	if(fflush(f)) {
 		perror("Flushing logfile failed");
 		return -1;
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "WAL failed, aborting.\n");
 		return EXIT_FAILURE;
 	}
-	
+
 	printf("{\n");
 	json_uid(&v); printf(",\n");
 	json_key("picc_key", master); printf(",\n");
@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Setting master key settings failed: %s\n", mf_error_str(ret));
 		return EXIT_FAILURE;
 	}
-	
+
 	ret = mf_change_current_key(intf, &s, master);
 	if(ret != MF_OK) {
 		fprintf(stderr, "Setting master key failed: %s\n", mf_error_str(ret));
