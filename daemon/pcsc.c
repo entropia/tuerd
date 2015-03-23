@@ -6,7 +6,7 @@
 #include <libmf.h>
 
 #include "util.h"
-#include "powercycle.h"
+#include "door.h"
 
 struct pcsc_context {
 	SCARDCONTEXT pcsc_ctx;
