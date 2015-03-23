@@ -28,12 +28,18 @@ static pid_t door_pid(void) {
 void open_door(void) {
 	pid_t pid = door_pid();
 
+	if(pid < 0)
+		return;
+
 	if(kill(pid, SIGUSR2) < 0)
 		perror("sending unlock signal failed");
 }
 
 void powercycle_reader(void) {
 	pid_t pid = door_pid();
+
+	if(pid < 0)
+		return;
 
 	if(kill(pid, SIGHUP) < 0)
 		perror("sending powercycle signal failed");
