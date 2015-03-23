@@ -3,9 +3,12 @@
 #include <string.h>
 #include <signal.h>
 
+#include <git2.h>
+
 #include "pcsc.h"
 #include "desfire.h"
-#include "curl.h"
+#include "door.h"
+#include "git.h"
 #include "util.h"
 
 int debug;
@@ -15,11 +18,10 @@ static int failcnt = 0;
 
 void check_config() {
 	const char *params[] = {
-		"TUERD_READER_BRICKED_URL",
-		"TUERD_READER_UNBRICKED_URL",
-		"TUERD_GETKEY_URL",
+		"TUERD_REPO_PATH",
 		"TUERD_UNLOCK_URL",
 		"TUERD_POLICY_AUTH",
+		"USBLOCKD_PIDFILE",
 		NULL
 	};
 
@@ -58,8 +60,8 @@ int main(int argc, char **argv) {
 	if(!pcsc_ctx)
 		die("pcsc_init() failed");
 
-	// Initially, the reader is fine
-	push_reader_state_curl(0);
+	git_threads_init();
+	atexit(git_threads_shutdown);
 
 	while(1) {
 		mf_interface *intf;
@@ -68,11 +70,10 @@ int main(int argc, char **argv) {
 
 		// If a manual open was requested, do it now.
 		if(open_requested) {
-			uint8_t uid[7] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 			open_requested = 0;
 
 			log("Manual open requested, opening door now");
-			open_door_curl(uid);
+			open_door();
 		}
 
 		intf = pcsc_wait(pcsc_ctx);
@@ -82,7 +83,6 @@ int main(int argc, char **argv) {
 			if(++failcnt >= 3 && !reader_crashed) {
 				log("Failing too often, allowing for manual open");
 				reader_crashed = 1;
-				push_reader_state_curl(1);
 			}
 
 			continue;
@@ -93,7 +93,6 @@ int main(int argc, char **argv) {
 		// Getting card succeeded, reset crash state
 		if(reader_crashed) {
 			log("Reader was broken recently. Disabling manual open now");
-			push_reader_state_curl(0);
 		}
 
 		failcnt = 0;
@@ -103,12 +102,12 @@ int main(int argc, char **argv) {
 		int auth_success;
 		uint8_t uid[7];
 
-		auth_success = desfire_authenticate(intf, get_key_curl, uid);
+		auth_success = desfire_authenticate(intf, get_key_git, uid);
 		pcsc_close(pcsc_ctx, intf);
 
 		if(auth_success) {
 			debug("Auth succeeded, opening door");
-			open_door_curl(uid);
+			open_door();
 
 			sleep(10);
 		} else {
