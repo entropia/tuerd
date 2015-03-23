@@ -21,6 +21,7 @@ void check_config() {
 		"TUERD_REPO_PATH",
 		"TUERD_UNLOCK_URL",
 		"TUERD_POLICY_AUTH",
+		"USBLOCKD_PIDFILE",
 		NULL
 	};
 
