@@ -2,16 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <unistd.h>
 
-#include "desfire.h"
+#include "rfid.h"
 #include "door.h"
 #include "git.h"
 #include "util.h"
 
-int debug;
+#define LOG_SECTION "main"
 
-static volatile sig_atomic_t reader_crashed = 0, open_requested = 0;
-static int failcnt = 0;
+int debug;
 
 void check_config() {
 	const char *params[] = {
@@ -25,25 +25,14 @@ void check_config() {
 			die("Need %s", params[i]);
 }
 
-void open_handler(int sig) {
-	if(reader_crashed)
-		open_requested = 1;
-}
-
-void register_handler() {
-	struct sigaction sa;
-	sa.sa_handler = open_handler;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-
-	if(sigaction(SIGUSR1, &sa, NULL) < 0)
-		die("Registering signal handler failed");
-}
-
 int main(int argc, char **argv) {
-	check_config();
-	register_handler();
+	(void) argc;
+	(void) argv;
 
+	check_config();
+
+	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
 	log("tuerd (rev " GIT_REV  ") starting up");
 
 	if(getenv("TUERD_DEBUG"))
@@ -51,62 +40,24 @@ int main(int argc, char **argv) {
 
 	debug("Debugging enabled. This allows people to be tracked!");
 
-	nfc_context *nfc_ctx;
-	nfc_init(&nfc_ctx);
-	if(!ctx)
-		die("initializing libnfc failed");
-
 	git_init();
+	nfc_device *nfc_dev = rfid_init();
 
 	while(1) {
-		mf_interface *intf;
+		debug("-----------------");
+		debug("waiting for event");
 
-		debug("Waiting for card");
+		rfid_poll(nfc_dev);
 
-		// If a manual open was requested, do it now.
-		if(open_requested) {
-			open_requested = 0;
+		debug("successfully got target");
 
-			log("Manual open requested, opening door now");
-			open_door();
-		}
-
-		intf = pcsc_wait(pcsc_ctx);
-		if(!intf) {
-			log("pcsc_wait() failed");
-
-			if(++failcnt >= 3 && !reader_crashed) {
-				log("Failing too often, allowing for manual open");
-				reader_crashed = 1;
-			}
-
-			continue;
-		}
-
-		debug("Successfully got card");
-
-		// Getting card succeeded, reset crash state
-		if(reader_crashed) {
-			log("Reader was broken recently. Disabling manual open now");
-		}
-
-		failcnt = 0;
-		reader_crashed = 0;
-
-		// Authenticate card
-		int auth_success;
-		uint8_t uid[7];
-
-		auth_success = desfire_authenticate(intf, get_key_git, uid);
-		pcsc_close(pcsc_ctx, intf);
-
-		if(auth_success) {
-			debug("Auth succeeded, opening door");
+		if(rfid_authenticate_any(nfc_dev, get_key_git)) {
+			debug("auth succeeded, opening door");
 			open_door();
 
 			sleep(10);
 		} else {
-			debug("Auth failed");
+			debug("auth failed");
 
 			sleep(1);
 		}

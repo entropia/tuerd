@@ -2,12 +2,16 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <ctype.h>
 
-#include <libmf.h>
 #include <git2.h>
 #include <jansson.h>
 
 #include "util.h"
+#include "git.h"
+#include "rfid.h"
+
+#define LOG_SECTION "git"
 
 static int check_lg2(int error, const char *message) {
 	const git_error *lg2err;
@@ -85,26 +89,59 @@ out:
 }
 
 void git_init(void) {
-	git_threads_init();
-	atexit(git_threads_shutdown);
+	/*git_threads_init();
+	atexit(git_threads_shutdown);*/
 }
+
+static int parse_key(uint8_t key[static 16], const char *data) {
+	if(!data || strlen(data) != 32)
+		return -1;
+
+	for(int i=0; i < 16; i++) {
+		char buf[3];
+		buf[0] = tolower(data[2*i]);
+		buf[1] = tolower(data[2*i+1]);
+		buf[2] = 0;
+
+		sscanf(buf, "%hhx", &key[i]);
+	}
+
+	return 0;
+}
+
 
 /*
  * Check whether an UID is permitted and retrieve the associated keys.
  */
-int get_key_git(uint8_t uid[static 7], mf_key_t key_out) {
-	int ret = 0;
+enum rfid_key_cb_result get_key_git(const char *uid, struct rfid_key *key_out) {
+	int ret = KEY_CB_ERROR;
 	const char *repopath = getenv("TUERD_REPO_PATH");
 	char buf[128];
-	snprintf(buf, 128, "%02X%02X%02X%02X%02X%02X%02X.json",
-			uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6]);
+
+	unsigned int i;
+	for(i = 0; i < (128 - strlen(".json")) && uid[i] != 0; i++)
+		if('0' <= uid[i] && uid[i] <= '9')
+			buf[i] = uid[i];
+		else {
+			char c = uid[i] & ~0x20;
+
+			if('A' <= c && c <= 'F')
+				buf[i] = c;
+			else {
+				log("invalid char '%c' in supplied UID", uid[i]);
+				return KEY_CB_ERROR;
+			}
+		}
+
+	buf[i] = 0;
+	strcat(buf, ".json");
 
 	// get the blob out of git
 	void *out;
 	size_t outlen;
 	if(read_file_git(repopath, buf, &out, &outlen) < 0) {
 		debug("couldn't find UID in git");
-		return 0;
+		return TAG_UNKNOWN;
 	}
 
 	// handle json
@@ -128,6 +165,9 @@ int get_key_git(uint8_t uid[static 7], mf_key_t key_out) {
 
 	if(!json_is_true(active)) {
 		debug("policy: key is not active");
+
+		ret = TAG_FORBIDDEN;
+
 		goto obj_out;
 	}
 
@@ -148,12 +188,12 @@ int get_key_git(uint8_t uid[static 7], mf_key_t key_out) {
 		goto obj_out;
 	}
 
-        if(mf_key_parse(key_out, keystr) < 0) {
+        if(parse_key (key_out->key, keystr) < 0) {
 		debug("Parsing key failed");
 		goto obj_out;
 	}
 
-	ret = 1;
+	ret = TAG_ALLOWED;
 obj_out:
 	json_decref(obj);
 out:
