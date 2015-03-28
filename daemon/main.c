@@ -5,7 +5,6 @@
 
 #include <git2.h>
 
-#include "pcsc.h"
 #include "desfire.h"
 #include "door.h"
 #include "git.h"
@@ -54,9 +53,10 @@ int main(int argc, char **argv) {
 
 	debug("Debugging enabled. This allows people to be tracked!");
 
-	struct pcsc_context *pcsc_ctx = pcsc_init();
-	if(!pcsc_ctx)
-		die("pcsc_init() failed");
+	nfc_context *nfc_ctx;
+	nfc_init(&nfc_ctx);
+	if(!ctx)
+		die("initializing libnfc failed");
 
 	git_threads_init();
 	atexit(git_threads_shutdown);
