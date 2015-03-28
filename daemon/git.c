@@ -84,6 +84,11 @@ out:
 	return retcode;
 }
 
+void git_init(void) {
+	git_threads_init();
+	atexit(git_threads_shutdown);
+}
+
 /*
  * Check whether an UID is permitted and retrieve the associated keys.
  */

@@ -3,8 +3,6 @@
 #include <string.h>
 #include <signal.h>
 
-#include <git2.h>
-
 #include "desfire.h"
 #include "door.h"
 #include "git.h"
@@ -58,8 +56,7 @@ int main(int argc, char **argv) {
 	if(!ctx)
 		die("initializing libnfc failed");
 
-	git_threads_init();
-	atexit(git_threads_shutdown);
+	git_init();
 
 	while(1) {
 		mf_interface *intf;
