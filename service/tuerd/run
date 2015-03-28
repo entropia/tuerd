@@ -3,9 +3,9 @@
 exec 2>&1
 
 export PCSC_READER_PATTERN="Contactless"
-export TUERD_GETKEY_URL="http://127.0.0.1:8080/auth/getkey"
-export TUERD_POLICY_AUTH="username:password"
-export TUERD_GIT_REPO="/home/clubmonitor/git"
+export TUERD_REPO_PATH="/home/clubmonitor/git"
+export USBLOCKD_PIDFILE="/var/run/usblockd.pid"
+
 export LIBMF_DEBUG=0
 export TUERD_DEBUG=0
 
