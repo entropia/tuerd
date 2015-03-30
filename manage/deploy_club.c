@@ -170,16 +170,16 @@ int main(int argc, char **argv) {
 	printf("{\n");
 	printf("   \"active\" : true,\n");
 
-	json_key("ca0523_door_key", door); printf("\n");
+	json_key("ca0523_door_key", door); printf(",\n");
 	json_key("ca0523_master_key", amk); printf(",\n");
 
 	printf("   \"personal\" : {\n");
-	printf("      \"name\" : \"%\",\n", argv[1]);
-	printf("      \"sponsors\" : [],\n");
+	printf("      \"name\" : \"%s\",\n", argv[1]);
+	printf("      \"sponsors\" : []\n");
 	printf("   },\n");
 
 	json_key("picc_key", master); printf(",\n");
-	json_uid(&v); printf(",\n");
+	json_uid(&v); printf("\n");
 
 	printf("}\n");
 
