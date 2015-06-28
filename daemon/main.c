@@ -25,6 +25,25 @@ void check_config() {
 			die("Need %s", params[i]);
 }
 
+void sigalarm(int sig) {
+	(void)sig;
+
+	const char *msg = "watchdog signal caught, exiting\n";
+	ssize_t remaining = strlen(msg);
+
+	while(remaining) {
+		ssize_t ret = write(STDERR_FILENO, msg, remaining);
+
+		if(ret < 0)
+			break;
+
+		remaining -= ret;
+		msg += ret;
+	}
+
+	_exit(EXIT_FAILURE);
+}
+
 int main(int argc, char **argv) {
 	(void) argc;
 	(void) argv;
@@ -40,11 +59,21 @@ int main(int argc, char **argv) {
 
 	debug("Debugging enabled. This allows people to be tracked!");
 
+	// initialize git
 	git_init();
 
+	// initialize nfc
 	nfc_device *nfc_dev = rfid_init();
 	if(!nfc_dev)
 		die("rfid_init failed");
+
+	// initialize watchdog handler
+	struct sigaction sa;
+	sa.sa_handler = sigalarm;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+
+	sigaction(SIGALRM, &sa, NULL);
 
 	while(1) {
 		debug("-----------------");
@@ -55,13 +84,17 @@ int main(int argc, char **argv) {
 
 		debug("successfully got target");
 
+		alarm(10);
+
 		if(rfid_authenticate_any(nfc_dev, get_key_git)) {
 			debug("auth succeeded, opening door");
 			open_door();
+			alarm(0);
 
 			sleep(10);
 		} else {
 			debug("auth failed");
+			alarm(0);
 
 			sleep(1);
 		}
