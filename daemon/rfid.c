@@ -71,6 +71,7 @@ nfc_device *rfid_init(void) {
 
 nfc_target *rfid_poll(nfc_device *dev) {
 	static nfc_target target;
+	int failcnt = 0;
 
 	while(1) {
 		nfc_modulation modulation = {
@@ -87,7 +88,13 @@ nfc_target *rfid_poll(nfc_device *dev) {
 		if(ret != NFC_ECHIP) {
 			log("nfc_initiator_poll_target() failed");
 
-			sleep(1);
+			failcnt++;
+			if(failcnt >= 6) {
+				log("nfc_initiator_poll_target() failed too often, aborting");
+				return NULL;
+			}
+
+			sleep(1 << (((failcnt > 4) ? 4 : failcnt) - 1));
 		}
 	}
 }

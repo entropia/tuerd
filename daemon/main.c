@@ -50,7 +50,8 @@ int main(int argc, char **argv) {
 		debug("-----------------");
 		debug("waiting for event");
 
-		rfid_poll(nfc_dev);
+		if(!rfid_poll(nfc_dev))
+			die("rfid_poll failed");
 
 		debug("successfully got target");
 
