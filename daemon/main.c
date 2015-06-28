@@ -41,7 +41,10 @@ int main(int argc, char **argv) {
 	debug("Debugging enabled. This allows people to be tracked!");
 
 	git_init();
+
 	nfc_device *nfc_dev = rfid_init();
+	if(!nfc_dev)
+		die("rfid_init failed");
 
 	while(1) {
 		debug("-----------------");
