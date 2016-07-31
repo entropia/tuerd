@@ -2,13 +2,12 @@
 
 exec 2>&1
 
-export PCSC_READER_PATTERN="Contactless"
-export TUERD_REPO_PATH="/home/clubmonitor/git"
-export USBLOCKD_PIDFILE="/var/run/usblockd.pid"
-
-export LIBMF_DEBUG=0
 export TUERD_DEBUG=0
+export TUERD_REPO_PATH="/home/tuerd/git"
+export USBLOCKD_PIDFILE="/var/run/usblockd.pid"
 
 echo $$ > /var/run/tuerd.pid
 
-exec chpst -utuerd:tuerd /usr/local/sbin/tuerd
+sleep 5
+
+exec chpst -utuerd:tuerd:dialout /usr/local/sbin/tuerd
