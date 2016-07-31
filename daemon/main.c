@@ -2,19 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <unistd.h>
 
-#include <git2.h>
-
-#include "pcsc.h"
-#include "desfire.h"
+#include "rfid.h"
 #include "door.h"
 #include "git.h"
 #include "util.h"
 
-int debug;
+#define LOG_SECTION "main"
 
-static volatile sig_atomic_t reader_crashed = 0, open_requested = 0;
-static int failcnt = 0;
+int debug;
 
 void check_config() {
 	const char *params[] = {
@@ -28,25 +25,33 @@ void check_config() {
 			die("Need %s", params[i]);
 }
 
-void open_handler(int sig) {
-	if(reader_crashed)
-		open_requested = 1;
-}
+void sigalarm(int sig) {
+	(void)sig;
 
-void register_handler() {
-	struct sigaction sa;
-	sa.sa_handler = open_handler;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
+	const char *msg = "watchdog signal caught, exiting\n";
+	ssize_t remaining = strlen(msg);
 
-	if(sigaction(SIGUSR1, &sa, NULL) < 0)
-		die("Registering signal handler failed");
+	while(remaining) {
+		ssize_t ret = write(STDERR_FILENO, msg, remaining);
+
+		if(ret < 0)
+			break;
+
+		remaining -= ret;
+		msg += ret;
+	}
+
+	_exit(EXIT_FAILURE);
 }
 
 int main(int argc, char **argv) {
-	check_config();
-	register_handler();
+	(void) argc;
+	(void) argv;
 
+	check_config();
+
+	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
 	log("tuerd (rev " GIT_REV  ") starting up");
 
 	if(getenv("TUERD_DEBUG"))
@@ -54,62 +59,42 @@ int main(int argc, char **argv) {
 
 	debug("Debugging enabled. This allows people to be tracked!");
 
-	struct pcsc_context *pcsc_ctx = pcsc_init();
-	if(!pcsc_ctx)
-		die("pcsc_init() failed");
+	// initialize git
+	git_init();
 
-	git_threads_init();
-	atexit(git_threads_shutdown);
+	// initialize nfc
+	nfc_device *nfc_dev = rfid_init();
+	if(!nfc_dev)
+		die("rfid_init failed");
+
+	// initialize watchdog handler
+	struct sigaction sa;
+	sa.sa_handler = sigalarm;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+
+	sigaction(SIGALRM, &sa, NULL);
 
 	while(1) {
-		mf_interface *intf;
+		debug("-----------------");
+		debug("waiting for event");
 
-		debug("Waiting for card");
+		if(!rfid_poll(nfc_dev))
+			die("rfid_poll failed");
 
-		// If a manual open was requested, do it now.
-		if(open_requested) {
-			open_requested = 0;
+		debug("successfully got target");
 
-			log("Manual open requested, opening door now");
+		alarm(10);
+
+		if(rfid_authenticate_any(nfc_dev, get_key_git)) {
+			debug("auth succeeded, opening door");
 			open_door();
-		}
-
-		intf = pcsc_wait(pcsc_ctx);
-		if(!intf) {
-			log("pcsc_wait() failed");
-
-			if(++failcnt >= 3 && !reader_crashed) {
-				log("Failing too often, allowing for manual open");
-				reader_crashed = 1;
-			}
-
-			continue;
-		}
-
-		debug("Successfully got card");
-
-		// Getting card succeeded, reset crash state
-		if(reader_crashed) {
-			log("Reader was broken recently. Disabling manual open now");
-		}
-
-		failcnt = 0;
-		reader_crashed = 0;
-
-		// Authenticate card
-		int auth_success;
-		uint8_t uid[7];
-
-		auth_success = desfire_authenticate(intf, get_key_git, uid);
-		pcsc_close(pcsc_ctx, intf);
-
-		if(auth_success) {
-			debug("Auth succeeded, opening door");
-			open_door();
+			alarm(0);
 
 			sleep(10);
 		} else {
-			debug("Auth failed");
+			debug("auth failed");
+			alarm(0);
 
 			sleep(1);
 		}
