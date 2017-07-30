@@ -4,7 +4,7 @@ ENV TUERLOCATION /tuerkrams
 ENV PCSC_READER_PATTERN Contactless
 
 RUN pacman --noconfirm -Syu
-RUN pacman --noconfirm -S pcsclite ccid base-devel cmake git
+RUN pacman --noconfirm -S gdb pcsclite ccid base-devel cmake git
 
 RUN git clone https://github.com/florolf/libmf.git $TUERLOCATION/libmf
 RUN git clone https://github.com/entropia/tuerd.git $TUERLOCATION/tuerd
@@ -24,6 +24,7 @@ RUN gcc -o deploy_club \
     -I ../ \
     -I $TUERLOCATION/libmf/include \
     -L$TUERLOCATION/libmf/build/src \
+    -ggdb \
     -lmf \
     -pthread \
     -I /usr/include/PCSC \
