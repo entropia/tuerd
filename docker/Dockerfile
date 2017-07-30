@@ -3,8 +3,6 @@ FROM base/archlinux
 ENV TUERLOCATION /tuerkrams
 ENV PCSC_READER_PATTERN Contactless
 
-COPY libgcrypt-1.7.0-2.pacman $TUERLOCATION/libgcrypt-1.7.0-2.pacman
-
 RUN pacman --noconfirm -Syu
 RUN pacman --noconfirm -S pcsclite ccid base-devel cmake git
 
