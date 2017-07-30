@@ -7,7 +7,6 @@ COPY libgcrypt-1.7.0-2.pacman $TUERLOCATION/libgcrypt-1.7.0-2.pacman
 
 RUN pacman --noconfirm -Syu
 RUN pacman --noconfirm -S pcsclite ccid base-devel cmake git
-RUN pacman --noconfirm -U $TUERLOCATION/libgcrypt-1.7.0-2.pacman
 
 RUN git clone https://github.com/florolf/libmf.git $TUERLOCATION/libmf
 RUN git clone https://github.com/entropia/tuerd.git $TUERLOCATION/tuerd
