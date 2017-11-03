@@ -2,3 +2,4 @@
 daemon/tuerd
 manage/deploy_club
 manage/deploy_club_nfc
+manage/deploy_log
