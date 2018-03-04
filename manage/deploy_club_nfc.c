@@ -7,6 +7,7 @@
 #include <freefare.h>
 #include <gcrypt.h>
 #include <unistd.h>
+#include <ctype.h>
 
 int NFC_MAX_DEVICES = 1;
 uint32_t DOOR_APPLICATION_ID = 0x2305CA;
@@ -40,6 +41,22 @@ void json_key(const char *name, uint8_t k[16]) {
     printf("   \"%s\" : \"", name);
     print_buffer(stdout, k, 16);
     printf("\"");
+}
+
+static int parse_key(uint8_t key[static 16], const char *data) {
+	if(!data || strlen(data) != 32)
+		return -1;
+
+	for(int i=0; i < 16; i++) {
+		char buf[3];
+		buf[0] = tolower(data[2*i]);
+		buf[1] = tolower(data[2*i+1]);
+		buf[2] = 0;
+
+		sscanf(buf, "%hhx", &key[i]);
+	}
+
+	return 0;
 }
 
 #define LOG_FILE "./deploy_log"
@@ -187,9 +204,21 @@ int main(int argc, char **argv) {
     /****** Authenticate with master key *******/
     // Default key
     uint8_t default_key[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    MifareDESFireKey default_key_des = mifare_desfire_des_key_new(default_key);
+    uint8_t default_master_key[16];
+    MifareDESFireKey default_master_key_des;
 
-    result = mifare_desfire_authenticate(tag, MDAR_KEY0, default_key_des);
+    if (argc > 1) {
+        parse_key(default_master_key, argv[2]);
+        default_master_key_des = mifare_desfire_3des_key_new(default_master_key);
+    } else {
+        default_master_key_des = mifare_desfire_des_key_new(default_key);
+    }
+    
+    printf("Using as master key: ");
+    print_buffer(stdout, default_master_key, 16);
+    printf("\n");
+
+    result = mifare_desfire_authenticate(tag, MDAR_KEY0, default_master_key_des);
 
     if (result < 0) {
         freefare_perror(tag, "Error authenticating with default key");
@@ -251,7 +280,7 @@ int main(int argc, char **argv) {
 
     /****** Set master key *******/
     MifareDESFireKey new_picc_key_3des = mifare_desfire_3des_key_new_with_version(new_picc_master_key);
-    result = mifare_desfire_change_key(tag, MDAR_KEY0, new_picc_key_3des, default_key_des);
+    result = mifare_desfire_change_key(tag, MDAR_KEY0, new_picc_key_3des, default_master_key_des);
     if (result < 0) {
         freefare_perror(tag, "Error setting master key");
         _error = EXIT_FAILURE; goto CLOSE;
@@ -289,7 +318,8 @@ int main(int argc, char **argv) {
 
 
     /****** Authenticating with default application master key ******/
-    result = mifare_desfire_authenticate(tag, MDAR_KEY0, default_key_des);
+    MifareDESFireKey default_app_master_key_des = mifare_desfire_des_key_new(default_key);
+    result = mifare_desfire_authenticate(tag, MDAR_KEY0, default_app_master_key_des);
     if (result < 0) {
         freefare_perror(tag, "Authentication with default amk failed");
         _error = EXIT_FAILURE; goto CLOSE;
@@ -298,7 +328,7 @@ int main(int argc, char **argv) {
 
     /****** Set application master key *******/
     MifareDESFireKey new_app_master_key_3des = mifare_desfire_3des_key_new(new_app_master_key);
-    result = mifare_desfire_change_key(tag, MDAR_KEY0, new_app_master_key_3des, default_key_des);
+    result = mifare_desfire_change_key(tag, MDAR_KEY0, new_app_master_key_3des, default_app_master_key_des);
     if (result < 0) {
         freefare_perror(tag, "Error setting application master key");
         _error = EXIT_FAILURE; goto CLOSE;

@@ -13,8 +13,8 @@ int main(int argc, char **argv) {
     int _error = 0;
 
     nfc_device *device = NULL;
-    MifareTag *tags = NULL;
-    MifareTag tag = NULL;
+    FreefareTag *tags = NULL;
+    FreefareTag tag = NULL;
 
     nfc_connstring devices[NFC_MAX_DEVICES];
     size_t device_count;
@@ -23,66 +23,66 @@ int main(int argc, char **argv) {
     nfc_init(&context);
 
     if (context == NULL) {
-        printf("Unable to init libnfc (malloc)");
+        printf("Unable to init libnfc (malloc)\n");
         exit(EXIT_FAILURE);
     }
 
     device_count = nfc_list_devices(context, devices, 8);
     if (device_count <= 0) {
-        printf("No NFC device found.");
+        printf("No NFC device found.\n");
         exit(EXIT_FAILURE);
     }
 
     device = nfc_open(context, devices[0]);
     if (!device) {
-        printf("nfc_open() failed");
+        printf("nfc_open() failed.\n");
         exit(EXIT_FAILURE);
     }
 
     tags = freefare_get_tags(device);
     if (!tags) {
         nfc_close(device);
-        printf("Error listing Mifare DESFire tags.");
+        printf("Error listing Mifare DESFire tags.\n");
         exit(EXIT_FAILURE);
     }
 
     if (!tags[0]) {
         nfc_close(device);
-        printf("Error: No tag found.");
+        printf("Error: No tag found.\n");
         exit(EXIT_FAILURE);
     }
 
     if (tags[0] && tags[1]) {
         nfc_close(device);
-        printf("Error: More than tag found.");
+        printf("Error: More than tag found.\n");
         exit(EXIT_FAILURE);
     }
 
     tag = tags[0];
 
-    enum mifare_tag_type type = freefare_get_tag_type(tag);
-    if (type != DESFIRE) {
+    enum freefare_tag_type type = freefare_get_tag_type(tag);
+    if (type != MIFARE_DESFIRE) {
         nfc_close(device);
-        printf("Error: RFID card is not a Mifare DESFire.");
+        printf("Error: RFID card is not a Mifare DESFire.\n");
         _error = EXIT_FAILURE; goto CLOSE;
     }
 
     result = mifare_desfire_connect(tag);
     if (result < 0) {
-        printf("Can't connect to Mifare DESFire target.");
+        printf("Can't connect to Mifare DESFire target.\n");
         _error = EXIT_FAILURE; goto CLOSE;
     }
 
     struct mifare_desfire_version_info info;
     result = mifare_desfire_get_version(tag, &info);
     if (result < 0) {
-        printf("Error reading Mifare DESFire Version");
+        printf("Error reading Mifare DESFire Version.\n");
         _error = EXIT_FAILURE;
         goto CLOSE;
     }
 
     if (info.software.version_major < 1) {
-        printf("Found old DESFire card - cannot use this card.");
+        printf("Found old DESFire card - cannot use this card.\n");
         _error = EXIT_FAILURE; goto CLOSE;
     }
 
