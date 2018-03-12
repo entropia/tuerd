@@ -16,7 +16,7 @@ int debug;
 void check_config() {
 	const char *params[] = {
 		"TUERD_REPO_PATH",
-		"USBLOCKD_PIDFILE",
+		"LOCKD_SOCKET",
 		NULL
 	};
 
