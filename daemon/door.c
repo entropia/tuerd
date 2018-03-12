@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <socket.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "door.h"
 #include "util.h"
@@ -10,16 +13,18 @@
 int send_lockd(char* data) {
 	char* filename = getenv("LOCKD_SOCKET");
 
+	struct sockaddr_un client_addr;
+	client_addr.sun_family = AF_UNIX;
+	strcpy(client_addr.sun_path, filename);
+
 	int sock = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sock < 0) {
 	    perror("opening stream socket failed");
 	    return EXIT_FAILURE;
 	}
-	server.sun_family = AF_UNIX;
-	strcpy(server.sun_path, filename);
 
-	if (connect(sock, (struct sockaddr *) &server, sizeof(struct sockaddr_un)) < 0) {
-		perror("opening stream socket failed")
+	if (connect(sock, (struct sockaddr *) &client_addr, sizeof(struct sockaddr_un)) < 0) {
+		perror("opening stream socket failed");
 		close(sock);
 		return EXIT_FAILURE;
 	}
