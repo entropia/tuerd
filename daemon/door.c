@@ -10,7 +10,7 @@
 #include "util.h"
 
 
-int send_lockd(char* data) {
+int send_lockd(char *data) {
 	char* filename = getenv("LOCKD_SOCKET");
 
 	struct sockaddr_un client_addr;
@@ -29,7 +29,7 @@ int send_lockd(char* data) {
 		return EXIT_FAILURE;
 	}
 
-	if (write(sock, data, sizeof(data)) < 0) {
+	if (write(sock, data, strlen(data)) < 0) {
 	    perror("writing on stream socket failed");
 		close(sock);
 		return EXIT_FAILURE;
