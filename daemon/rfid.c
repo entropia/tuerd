@@ -99,7 +99,7 @@ nfc_target *rfid_poll(nfc_device *dev) {
 	}
 }
 
-static bool rfid_authenticate(MifareTag tag, struct rfid_key *key) {
+static bool rfid_authenticate(FreefareTag tag, struct rfid_key *key) {
 	int ret;
 	bool result = false;
 
@@ -135,7 +135,7 @@ out_tag:
 }
 
 bool rfid_authenticate_any(nfc_device *dev, key_callback_t cb) {
-	MifareTag *tags = freefare_get_tags(dev);
+	FreefareTag *tags = freefare_get_tags(dev);
 	if(!tags) {
 		// FIXME: reset reader?
 		log("error listing tags");
@@ -143,9 +143,9 @@ bool rfid_authenticate_any(nfc_device *dev, key_callback_t cb) {
 	}
 
 	for(int i = 0; tags[i]; i++) {
-		MifareTag tag = tags[i];
+		FreefareTag tag = tags[i];
 
-		if(freefare_get_tag_type(tag) != DESFIRE) {
+		if(freefare_get_tag_type(tag) != MIFARE_DESFIRE) {
 			log("tag is not a desfire tag");
 			continue;
 		}
