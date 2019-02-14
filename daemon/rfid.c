@@ -25,13 +25,13 @@ nfc_device *rfid_init(void) {
 	door_aid = mifare_desfire_aid_new(0x2305CA);
 
 	nfc_connstring devices[NFC_MAX_DEVICES];
-	int device_count = nfc_list_devices(nfc_ctx, devices, NFC_MAX_DEVICES);
+	size_t device_count = nfc_list_devices(nfc_ctx, devices, NFC_MAX_DEVICES);
 	if(device_count <= 0) {
 		log("no NFC devices found");
 		return NULL;
 	}
 
-	log("found %u NFC devices:", device_count);
+	log("found %u NFC devices:", (int) device_count);
 	for(int i = 0; i < device_count; i++)
 		log(" - %s", devices[i]);
 
@@ -94,7 +94,7 @@ nfc_target *rfid_poll(nfc_device *dev) {
 				return NULL;
 			}
 
-			sleep(1 << (((failcnt > 4) ? 4 : failcnt) - 1));
+			sleep((unsigned int) (1 << (((failcnt > 4) ? 4 : failcnt) - 1)));
 		}
 	}
 }

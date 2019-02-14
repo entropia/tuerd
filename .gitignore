@@ -3,3 +3,7 @@ daemon/tuerd
 manage/deploy
 manage/deploy_log
 manage/read_uid
+
+CMakeLists.txt
+.idea/
+cmake-build-debug/

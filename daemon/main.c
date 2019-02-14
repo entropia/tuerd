@@ -32,7 +32,7 @@ void sigalarm(int sig) {
 	ssize_t remaining = strlen(msg);
 
 	while(remaining) {
-		ssize_t ret = write(STDERR_FILENO, msg, remaining);
+		ssize_t ret = write(STDERR_FILENO, msg, (size_t) remaining);
 
 		if(ret < 0)
 			break;
@@ -99,6 +99,4 @@ int main(int argc, char **argv) {
 			sleep(1);
 		}
 	}
-
-	return EXIT_SUCCESS;
 }

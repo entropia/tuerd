@@ -99,8 +99,8 @@ static int parse_key(uint8_t key[static 16], const char *data) {
 
 	for(int i=0; i < 16; i++) {
 		char buf[3];
-		buf[0] = tolower(data[2*i]);
-		buf[1] = tolower(data[2*i+1]);
+		buf[0] = (char) tolower(data[2 * i]);
+		buf[1] = (char) tolower(data[2 * i + 1]);
 		buf[2] = 0;
 
 		sscanf(buf, "%hhx", &key[i]);
@@ -123,7 +123,7 @@ enum rfid_key_cb_result get_key_git(const char *uid, struct rfid_key *key_out) {
 		if('0' <= uid[i] && uid[i] <= '9')
 			buf[i] = uid[i];
 		else {
-			char c = uid[i] & ~0x20;
+			char c = (char) (uid[i] & ~0x20);
 
 			if('A' <= c && c <= 'F')
 				buf[i] = c;
