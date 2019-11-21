@@ -32,13 +32,13 @@ nfc_device *rfid_init(void) {
 	}
 
 	log("found %u NFC devices:", (int) device_count);
-	for(int i = 0; i < device_count; i++)
+	for(int i = 0; i < (int)device_count; i++)
 		log(" - %s", devices[i]);
 
 	int selected_device = -1;
 	const char *conf_connstring = getenv("RFID_CONNSTRING");
 	if(conf_connstring) {
-		for(int i = 0; i < device_count; i++)
+		for(int i = 0; i < (int)device_count; i++)
 			if(strstr(devices[i], conf_connstring)) {
 				selected_device = i;
 				break;
