@@ -253,7 +253,7 @@ int main(int argc, char **argv) {
     }
 
     printf("{\n");
-    printf("   \"active\" : true,\n");
+    printf("   \"active\" : false,\n");
 
     json_key("ca0523_door_key", new_app_key); printf(",\n");
     json_key("ca0523_master_key", new_app_master_key); printf(",\n");
