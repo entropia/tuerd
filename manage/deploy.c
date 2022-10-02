@@ -204,14 +204,14 @@ int main(int argc, char **argv) {
     /****** Authenticate with master key *******/
     // Default key
     uint8_t default_key[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    uint8_t default_master_key[16];
+    uint8_t default_master_key[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     MifareDESFireKey default_master_key_des;
 
     if (argc > 1) {
         parse_key(default_master_key, argv[2]);
         default_master_key_des = mifare_desfire_3des_key_new(default_master_key);
     } else {
-        default_master_key_des = mifare_desfire_des_key_new(default_key);
+        default_master_key_des = mifare_desfire_des_key_new(default_master_key);
     }
     
     printf("Using as master key: ");
